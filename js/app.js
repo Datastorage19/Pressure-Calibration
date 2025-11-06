@@ -1,10 +1,12 @@
-// แทนที่บรรทัดหัวตารางเดิมใน btnCSV ด้วย:
-const head = ","UUC","Dev[bar](2-1)","U[bar]","Result"];
-const lines = [head.join(",")];
-
 /* ===== Utilities & State ===== */
 const pages=["dashboard","setup","entry","uncert","report","charts","help"];
-const toBar={"bar":v=>v,"kPa":v=>v/100,"Pa":v=>v/100000,"psi":v=>v*0.0689476,"mmHg":v=>v*0.00133322};
+const toBar={
+  "bar":v=>v,
+  "kPa":v=>v/100,
+  "Pa":v=>v/100000,
+  "psi":v=>v*0.0689476,
+  "mmHg":v=>v*0.00133322
+};
 function $(id){return document.getElementById(id)}
 function val(id){return $(id).value}
 function num(id){const v=parseFloat(val(id));return isNaN(v)?null:v;}
@@ -38,10 +40,16 @@ async function saveJob(job){
   return job.id;
 }
 async function loadJobs(){return JSON.parse(localStorage.getItem("cal_jobs")||"[]")}
-async function deleteJob(id){const l=(await loadJobs()).filter(x=>x.id!==id); localStorage.setItem("cal_jobs",JSON.stringify(l)); refreshDashboard();}
+async function deleteJob(id){
+  const l=(await loadJobs()).filter(x=>x.id!==id);
+  localStorage.setItem("cal_jobs",JSON.stringify(l));
+  refreshDashboard();
+}
 
 /* ===== Navigation ===== */
-$("nav").addEventListener("click",e=>{ if(e.target.classList.contains("tab")) switchPage(e.target.dataset.page); });
+$("nav").addEventListener("click",e=>{
+  if(e.target.classList.contains("tab")) switchPage(e.target.dataset.page);
+});
 function switchPage(p){
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
   pages.forEach(id=>$("page-"+id).classList.toggle("hidden",id!==p));
@@ -50,14 +58,20 @@ function switchPage(p){
   if(p==="report"){ buildReportHeader(); ensureResults(); buildResultTable(); makeAutoAnalysis(); }
   if(p==="charts"){ ensureResults(); buildCharts(); makeAICharts(); }
 }
-if(location.hash){const h=location.hash.slice(1); if(pages.includes(h)) switchPage(h);}
+if(location.hash){
+  const h=location.hash.slice(1);
+  if(pages.includes(h)) switchPage(h);
+}
 
 /* ===== Dashboard ===== */
 async function refreshDashboard(){
   const jobs=await loadJobs(), txt=(val("searchText")||"").toLowerCase(), df=val("filterDateFrom"), dt=val("filterDateTo"), st=val("filterStatus");
   const filtered=jobs.filter(j=>{
     const s1=!txt || (j.instrument?.model||"").toLowerCase().includes(txt) || (j.instrument?.serial||"").toLowerCase().includes(txt);
-    const d=j.instrument?.calDate||""; const s2=(!df||d>=df)&&(!dt||d<=dt); const s3=!st || j.status===st || j.verdictOverall===st; return s1&&s2&&s3;
+    const d=j.instrument?.calDate||"";
+    const s2=(!df||d>=df)&&(!dt||d<=dt);
+    const s3=!st || j.status===st || j.verdictOverall===st;
+    return s1&&s2&&s3;
   });
   $("kpi-total").innerText=jobs.length;
   $("kpi-progress").innerText=jobs.filter(x=>x.status==="In Progress").length;
@@ -92,9 +106,21 @@ $("btnNew").addEventListener("click",()=>{
   currentJob.customer={company:val("factorySelect")||"—",address:"—"};
   fillSetupForm(); switchPage("setup");
 });
-$("chkAll").addEventListener("change",e=>{ document.querySelectorAll(".chkRow").forEach(c=>c.checked=e.target.checked); });
-function loadIntoEditor(j){ currentJob=JSON.parse(JSON.stringify(j)); fillSetupForm(); switchPage("setup"); }
-function cloneJob(id){ loadJobs().then(l=>{const j=l.find(x=>x.id===id); if(!j) return; const c=JSON.parse(JSON.stringify(j)); c.id=null; c.status="In Progress"; c.verdictOverall=""; currentJob=c; fillSetupForm(); switchPage("setup");}); }
+$("chkAll").addEventListener("change",e=>{
+  document.querySelectorAll(".chkRow").forEach(c=>c.checked=e.target.checked);
+});
+function loadIntoEditor(j){
+  currentJob=JSON.parse(JSON.stringify(j));
+  fillSetupForm(); switchPage("setup");
+}
+function cloneJob(id){
+  loadJobs().then(l=>{
+    const j=l.find(x=>x.id===id); if(!j) return;
+    const c=JSON.parse(JSON.stringify(j));
+    c.id=null; c.status="In Progress"; c.verdictOverall="";
+    currentJob=c; fillSetupForm(); switchPage("setup");
+  });
+}
 
 /* ---- Tag printing ---- */
 $("btnPrintTag").addEventListener("click",async()=>{
@@ -223,7 +249,7 @@ $("addStdRow").addEventListener("click",()=>{
   const row={serial:val("stdIn_serial")||"—",cert:val("stdIn_cert")||"—",calDate:val("stdIn_calDate")||"—",
              dueDate:val("stdIn_dueDate")||"—",desc:val("stdIn_desc")||"—",status:val("stdIn_status")||"OK"};
   currentJob.standards_used.push(row); renderStdList();
-  ["stdIn_serial","stdIn_cert","stdIn_calDate","stdIn_dueDate","stdIn_desc"].forEach(id=>$(id).value="");
+  ["stdIn_serial","stdIn_cert","stdIn_calDate","stdIn_dueDate","stdIn_desc"].forEach(id=>$(id).value="";
 });
 function renderStdList(){
   const tb=$("stdList"); tb.innerHTML="";
@@ -256,12 +282,19 @@ $("btnSaveSetup").addEventListener("click",async()=>{
   s.app.name=val("sigAppName")||"—"; s.app.title=val("sigAppTitle")||"—"; s.app.date=val("sigAppDate")||"—";
   currentJob.limits.acceptance=num("accLimitBar"); currentJob.limits.plant=num("plantLimitBar"); currentJob.limits.enableCorrection=(val("enableCorrection")==="Yes");
 
-  if(!i.type||!i.serial||!i.model||isNaN(i.rangeMin)||isNaN(i.rangeMax)||!i.calDate||currentJob.accuracy.points.length===0){alert("กรอกช่องบังคับ + จุดสอบเทียบ");return;}
+  if(!i.type||!i.serial||!i.model||isNaN(i.rangeMin)||isNaN(i.rangeMax)||!i.calDate||currentJob.accuracy.points.length===0){
+    alert("กรอกช่องบังคับ + จุดสอบเทียบ");return;
+  }
   await saveJob(currentJob); await refreshDashboard(); switchPage("entry");
 });
 
 /* ===== Entry ===== */
-function getCycles(){const s=currentJob.accuracy.seq||""; if(s.startsWith("A"))return{up:2,down:2}; if(s.startsWith("B"))return{up:2,down:1}; return{up:1,down:1};}
+function getCycles(){
+  const s=currentJob.accuracy.seq||"";
+  if(s.startsWith("A"))return{up:2,down:2};
+  if(s.startsWith("B"))return{up:2,down:1};
+  return{up:1,down:1};
+}
 function autoBuildEntry(){
   $("stdName").value=currentJob.standard.name||"";
   $("stdSerial").value=currentJob.standard.serial||"";
@@ -270,7 +303,12 @@ function autoBuildEntry(){
   $("stdCert").value=currentJob.standard.cert||"";
   const pts=currentJob.accuracy.points||[]; const cyc=getCycles();
   if(!currentJob.table || currentJob.table.length!==pts.length){
-    currentJob.table=pts.map(p=>({point:p,up:Array(cyc.up).fill(null).map(()=>({STD:"",UUC:""})),down:Array(cyc.down).fill(null).map(()=>({STD:"",UUC:""})),avgSTD:null,avgUUC:null,dev:null,hyst:null}));
+    currentJob.table=pts.map(p=>({
+      point:p,
+      up:Array(cyc.up).fill(null).map(()=>({STD:"",UUC:""})),
+      down:Array(cyc.down).fill(null).map(()=>({STD:"",UUC:""})),
+      avgSTD:null,avgUUC:null,dev:null,hyst:null
+    }));
   }
   renderEntryTable(); calcTable();
 }
@@ -324,9 +362,13 @@ function calcTable(){
     }
     const dev=(avgUUC!=null&&avgSTD!=null)? +(avgUUC-avgSTD).toFixed(6):null;
     let hyst=null; if(upsUUC.length>0&&dnsUUC.length>0){
-      const upAvg=upsUUC.reduce((a,b)=>a+b,0)/upsUUC.length; const dnAvg=dnsUUC.reduce((a,b)=>a+b,0)/dnsUUC.length; hyst=+(upAvg-dnAvg).toFixed(6);
+      const upAvg=upsUUC.reduce((a,b)=>a+b,0)/upsUUC.length;
+      const dnAvg=dnsUUC.reduce((a,b)=>a+b,0)/dnsUUC.length;
+      hyst=+(upAvg-dnAvg).toFixed(6);
     }
-    r.avgSTD=avgSTD!=null? +avgSTD.toFixed(6):null; r.avgUUC=avgUUC!=null? +avgUUC.toFixed(6):null; r.dev=dev; r.hyst=hyst;
+    r.avgSTD=avgSTD!=null? +avgSTD.toFixed(6):null;
+    r.avgUUC=avgUUC!=null? +avgUUC.toFixed(6):null;
+    r.dev=dev; r.hyst=hyst;
   });
   renderEntryTable();
 }
@@ -344,8 +386,12 @@ $("btnAutoFromData").addEventListener("click",()=>{
   const zeros=currentJob.table.filter(r=>r.point===0 && r.dev!=null).map(r=>Math.abs(r.dev)), maxZero=zeros.length?Math.max(...zeros):0;
   const acc=parseFloat(currentJob.standard.acc)||0; const res=parseFloat(currentJob.standard.res)||0;
   const devs=currentJob.table.map(r=>r.dev).filter(v=>v!=null); const n=devs.length;
-  let sd=0; if(n>1){const mean=devs.reduce((a,b)=>a+b,0)/n; const v=devs.reduce((a,b)=>a+(b-mean)**2,0)/(n-1); sd=Math.sqrt(v);}
-  const hs=currentJob.table.map(r=>r.hyst).filter(v=>v!=null); const mH=hs.length? hs.reduce((a,b)=>a+b,0)/hs.length:0;
+  let sd=0; if(n>1){
+    const mean=devs.reduce((a,b)=>a+b,0)/n;
+    const v=devs.reduce((a,b)=>a+(b-mean)**2,0)/(n-1); sd=Math.sqrt(v);
+  }
+  const hs=currentJob.table.map(r=>r.hyst).filter(v=>v!=null);
+  const mH=hs.length? hs.reduce((a,b)=>a+b,0)/hs.length:0;
   $("u_standard").value=(acc/Math.sqrt(3)).toFixed(6);
   $("u_res_std").value=((res)/(2*Math.sqrt(3))).toFixed(6);
   $("u_zero").value=(maxZero/Math.sqrt(3)).toFixed(6);
@@ -353,7 +399,9 @@ $("btnAutoFromData").addEventListener("click",()=>{
   $("u_hyst").value=(mH/Math.sqrt(3)).toFixed(6);
   calcUncertAndVerdict();
 });
-$("btnSaveUncert").addEventListener("click",async()=>{calcUncertAndVerdict(); await saveJob(currentJob); refreshDashboard(); switchPage("report");});
+$("btnSaveUncert").addEventListener("click",async()=>{
+  calcUncertAndVerdict(); await saveJob(currentJob); refreshDashboard(); switchPage("report");
+});
 function getAcceptanceLimit(){
   const user=currentJob.limits.acceptance;
   if(user!=null && !isNaN(user)) return +(+user).toFixed(6);
@@ -363,10 +411,19 @@ function getAcceptanceLimit(){
 }
 function calcUncertAndVerdict(){
   const u=currentJob.uncertainty;
-  u.ustd=parseFloat(val("u_standard"))||0; u.ures=parseFloat(val("u_res_std"))||0; u.uzero=parseFloat(val("u_zero"))||0; u.urep=parseFloat(val("u_repeat"))||0; u.uhyst=parseFloat(val("u_hyst"))||0;
+  u.ustd=parseFloat(val("u_standard"))||0;
+  u.ures=parseFloat(val("u_res_std"))||0;
+  u.uzero=parseFloat(val("u_zero"))||0;
+  u.urep=parseFloat(val("u_repeat"))||0;
+  u.uhyst=parseFloat(val("u_hyst"))||0;
   u.U=+(2*Math.sqrt(u.ustd**2+u.ures**2+u.uzero**2+u.urep**2+u.uhyst**2)).toFixed(6);
   const acceptance=getAcceptanceLimit();
-  currentJob.results=currentJob.table.map(r=>{const dev=r.dev ?? 0; const errorSpan=Math.abs(dev)+u.U; const pass=errorSpan<=acceptance; return {point:r.point,deviation:dev,U:u.U,errorSpan:+errorSpan.toFixed(6),pass, std:r.avgSTD, uuc:r.avgUUC};});
+  currentJob.results=currentJob.table.map(r=>{
+    const dev=r.dev ?? 0;
+    const errorSpan=Math.abs(dev)+u.U;
+    const pass=errorSpan<=acceptance;
+    return {point:r.point,deviation:dev,U:u.U,errorSpan:+errorSpan.toFixed(6),pass, std:r.avgSTD, uuc:r.avgUUC};
+  });
   currentJob.verdictOverall=currentJob.results.every(x=>x.pass)?"Pass":"Fail";
   currentJob.status="Completed";
   $("uncertSummary").innerHTML=`U (k=2)=<b>${fmt(u.U)}</b> | Acceptance=${acceptance} bar | ผลรวม: <span class="badge ${currentJob.verdictOverall==='Pass'?'pass':'fail'}">${currentJob.verdictOverall}</span>`;
@@ -377,7 +434,14 @@ function calcUncertAndVerdict(){
 function ensureResults(){
   if(!currentJob.results?.length){
     const acc=getAcceptanceLimit();
-    currentJob.results=(currentJob.table||[]).map(r=>({point:r.point,deviation:r.dev||0,U:currentJob.uncertainty.U||0,errorSpan:Math.abs(r.dev||0)+(currentJob.uncertainty.U||0),pass:(Math.abs(r.dev||0)+(currentJob.uncertainty.U||0))<=acc,std:r.avgSTD,uuc:r.avgUUC}));
+    currentJob.results=(currentJob.table||[]).map(r=>({
+      point:r.point,
+      deviation:r.dev||0,
+      U:currentJob.uncertainty.U||0,
+      errorSpan:Math.abs(r.dev||0)+(currentJob.uncertainty.U||0),
+      pass:(Math.abs(r.dev||0)+(currentJob.uncertainty.U||0))<=acc,
+      std:r.avgSTD,uuc:r.avgUUC
+    }));
   }
 }
 function buildResultTable(){
@@ -438,7 +502,11 @@ function buildReportHeader(){
   const list=(currentJob.standards_used&&currentJob.standards_used.length)? currentJob.standards_used : [{
     serial: currentJob.standard.serial||"—", cert: currentJob.standard.cert||"—", calDate:"—", dueDate:"—", desc: currentJob.standard.name||"—", status:"OK"
   }];
-  list.forEach(su=>{const tr=document.createElement("tr"); tr.innerHTML=`<td>${su.serial}</td><td>${su.cert}</td><td>${su.calDate}</td><td>${su.dueDate}</td><td>${su.desc}</td><td>${su.status}</td>`; t.appendChild(tr);});
+  list.forEach(su=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${su.serial}</td><td>${su.cert}</td><td>${su.calDate}</td><td>${su.dueDate}</td><td>${su.desc}</td><td>${su.status}</td>`;
+    t.appendChild(tr);
+  });
   setTxt("rAmbT",e.temp??"—"); setTxt("rAmbH",e.humid??"—"); setTxt("rAmbP",e.atm??"—");
   setTxt("sigTechNameOut",s.tech.name); setTxt("sigTechTitleOut",s.tech.title); setTxt("sigTechDateOut",s.tech.date);
   setTxt("sigRevNameOut",s.rev.name); setTxt("sigRevTitleOut",s.rev.title); setTxt("sigRevDateOut",s.rev.date);
@@ -492,15 +560,30 @@ function makeAutoAnalysis(){
   const overMPE=currentJob.results.filter(x=>x.errorSpan>acceptance);
   const meanDev=(devs.length? devs.reduce((a,b)=>a+b,0)/devs.length : 0);
   const hMean=(currentJob.table.map(r=>r.hyst).filter(v=>v!=null).reduce((s,v)=>s+v,0) / (currentJob.table.filter(r=>r.hyst!=null).length||1)) || 0;
-  let slope=0, intercept=0; if(pts.length>1){const n=pts.length; const sx=pts.reduce((a,b)=>a+b,0), sy=devs.reduce((a,b)=>a+b,0); const sxy=pts.reduce((a,_,k)=>a+pts[k]*devs[k],0); const sx2=pts.reduce((a,b)=>a+b*b,0); const den=(n*sx2 - sx*sx)||1; slope=(n*sxy - sx*sy)/den; intercept=(sy - slope*sx)/n; }
+  let slope=0, intercept=0;
+  if(pts.length>1){
+    const n=pts.length;
+    const sx=pts.reduce((a,b)=>a+b,0), sy=devs.reduce((a,b)=>a+b,0);
+    const sxy=pts.reduce((a,_,k)=>a+pts[k]*devs[k],0);
+    const sx2=pts.reduce((a,b)=>a+b*b,0);
+    const den=(n*sx2 - sx*sx)||1;
+    slope=(n*sxy - sx*sy)/den; intercept=(sy - slope*sx)/n;
+  }
   const lines=[];
   lines.push(`<b>สรุป</b>: ${i.type||"-"} รุ่น ${i.model||"-"} S/N ${i.serial||"-"} ช่วง ${i.rangeMin}–${i.rangeMax} ${i.unit} | Sequence ${a.seq||"-"}`);
   lines.push(`U (k=2) = ${fmt(u.U)} | MPE = ${acceptance} bar`);
   lines.push(`Deviation เฉลี่ย ≈ ${fmt(meanDev)} | Hysteresis เฉลี่ย ≈ ${fmt(hMean)} | แนวโน้ม ≈ ${fmt(slope)} bar/bar`);
-  if(overMPE.length===0){lines.push(`<span class="badge pass">PASS</span> — ทุกจุดใต้ MPE`);} else {const w=overMPE.reduce((m,x)=>x.errorSpan>m.errorSpan?x:m,{errorSpan:-Infinity}); lines.push(`<span class="badge fail">FAIL</span> — เกิน MPE ${overMPE.length} จุด (แย่สุด ${fmt(w.point)} bar, Span=${fmt(w.errorSpan)})`);}
+  if(overMPE.length===0){
+    lines.push(`<span class="badge pass">PASS</span> — ทุกจุดใต้ MPE`);
+  } else {
+    const w=overMPE.reduce((m,x)=>x.errorSpan>m.errorSpan?x:m,{errorSpan:-Infinity});
+    lines.push(`<span class="badge fail">FAIL</span> — เกิน MPE ${overMPE.length} จุด (แย่สุด ${fmt(w.point)} bar, Span=${fmt(w.errorSpan)})`);
+  }
   if(currentJob.limits.enableCorrection){
-    if(Math.abs(slope)<(0.02*acceptance)) lines.push(`<b>แนะนำค่าแก้ Offset</b>: c = −mean(dev) = ${fmt(-meanDev)} → Reading_corr = Reading + c`);
-    else lines.push(`<b>แนะนำ Linear</b>: a=${fmt(-slope)}, b=${fmt(-intercept)} → Reading_corr = Reading + (a·Point + b)`);
+    if(Math.abs(slope)<(0.02*acceptance))
+      lines.push(`<b>แนะนำค่าแก้ Offset</b>: c = −mean(dev) = ${fmt(-meanDev)} → Reading_corr = Reading + c`);
+    else
+      lines.push(`<b>แนะนำ Linear</b>: a=${fmt(-slope)}, b=${fmt(-intercept)} → Reading_corr = Reading + (a·Point + b)`);
   }
   $("aiNote").innerHTML=`<div>${lines.join("<br>")}</div>`;
 }
@@ -517,18 +600,20 @@ function makeAICharts(){
   $("aiCharts").innerHTML = `<ul><li>${bullets.join("</li><li>")}</li></ul>`;
 }
 
-/* Export */
+/* Export PDF */
 $("btnMakePDF").addEventListener("click",async()=>{
   buildReportHeader(); ensureResults(); buildResultTable(); makeAutoAnalysis();
   const doc=new jspdf.jsPDF({unit:"pt",format:"a4"});
   const node=$("reportCard"); const canvas=await html2canvas(node,{scale:2,background:"#ffffff"});
   const img=canvas.toDataURL("image/png"); const pageW=doc.internal.pageSize.getWidth();
   const imgW=pageW-40; const imgH=canvas.height*(imgW/canvas.width);
-  doc.addImage(img,"PNG",20,20,imgW,imgH); doc.save(`Calibration_${currentJob.instrument.serial||"report"}.pdf`);
+  doc.addImage(img,"PNG",20,20,imgW,imgH);
+  doc.save(`Calibration_${currentJob.instrument.serial||"report"}.pdf`);
 });
-// ===== Export CSV (FIXED) =====
+
+/* Export CSV (FIXED) */
 $("btnCSV").addEventListener("click", () => {
-  // หัวตาราง CSV (ใส่เป็น array ของ string แล้วค่อย join)
+  // หัวตาราง CSV ต้องเป็น array ของ string แล้วค่อย join
   const head = ", "UUC", "Dev[bar](2-1)", "U[bar]", "Result"];
   const lines = [head.join(",")];
 
@@ -543,14 +628,14 @@ $("btnCSV").addEventListener("click", () => {
     let uuc_mA = null, calcP_bar = null;
 
     if (isTX) {
-      // UUC เป็น mA และคำนวณความดันจาก 4–20 mA
+      // 4–20 mA → bar
       uuc_mA = r.uuc ?? null;
       if (uuc_mA != null) {
         calcP_bar = pminBar + ((uuc_mA - 4) / 16) * (pmaxBar - pminBar);
         calcP_bar = +calcP_bar.toFixed(6);
       }
     } else {
-      // UUC เป็นค่าความดันโดยตรง (เช่น เกจ)
+      // UUC เป็นความดันโดยตรง
       if (r.uuc != null) calcP_bar = +(+r.uuc).toFixed(6);
     }
 
@@ -559,22 +644,15 @@ $("btnCSV").addEventListener("click", () => {
       : (r.deviation != null ? +(+r.deviation).toFixed(6) : null);
 
     const out = [
-      stdBar != null ? fmt(stdBar) : "-",                  // Standard
-      isTX ? (uuc_mA != null ? fmt(uuc_mA) : "-") : "-",   // UUC[mA] (สำหรับ Transmitter เท่านั้น)
-      calcP_bar != null ? fmt(calcP_bar) : "-",            // CalcP
-      dev2 != null ? fmt(dev2) : "-",                      // Dev[bar](2-1)
-      r.U != null ? fmt(r.U) : "-",                        // U[bar]
-      r.pass ? "PASS" : "FAIL"                             // Result
+      stdBar != null ? fmt(stdBar) : "-",
+      isTX ? (uuc_mA != null ? fmt(uuc_mA) : "-") : "-",
+      calcP_bar != null ? fmt(calcP_bar) : "-",
+      dev2 != null ? fmt(dev2) : "-",
+      r.U != null ? fmt(r.U) : "-",
+      r.pass ? "PASS" : "FAIL"
     ];
     lines.push(out.join(","));
   });
-
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Calibration_${currentJob.instrument.serial || "data"}.csv`;
-  a.click();
-});
 
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
@@ -603,8 +681,10 @@ function init(){
   refreshDashboard();
 
   // hash nav direct
-  if(location.hash){const h=location.hash.slice(1); if(pages.includes(h)) switchPage(h);}
-
+  if(location.hash){
+    const h=location.hash.slice(1);
+    if(pages.includes(h)) switchPage(h);
+  }
   // Keyboard enter selects first datalist option — (behavior native)
 }
 init();
