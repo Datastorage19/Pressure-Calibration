@@ -2,151 +2,504 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pressure Calibration — DKD-R 6-1</title>
-
-  <!-- Fonts & CSS -->
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
-
-  <!-- Vendors (defer ให้โหลดหลัง DOM parsing) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js" defer></script>
-
-  <!-- (Optional) Firebase – ถ้ายังไม่ใช้ ให้คอมเมนต์ไว้ -->
-  <!--
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js" defer></script>
-  <script defer>
-    const firebaseConfig = {/* TODO: ใส่ config */};
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-  -->
+  <title>Pressure Calibration Management (DKD-R 6-1)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Topbar & Tabs -->
-  <div class="topbar">
-    <div class="container">
-      <div class="top-title">
-        <img src="assets/thaiBev-logo.png" alt="ThaiBev" style="height:24px;vertical-align:middle;margin-right:8px;">
-        Pressure Calibration — DKD-R 6-1
-      </div>
-      <div class="tabs" id="nav">
-        <button class="tab active" data-page="dashboard">1) Dashboard</button>
-        <button class="tab" data-page="setup">2) Calibration Setup</button>
-        <button class="tab" data-page="entry">3) Measurement Entry</button>
-        <button class="tab" data-page="uncert">4) Uncertainty</button>
-        <button class="tab" data-page="report">5) Report</button>
-        <button class="tab" data-page="charts">6) Charts</button>
-        <button class="tab" data-page="help">7) Guide</button>
+  <!-- ===== Top Navigation (single line, no-wrap) ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-dot"></div>
+      <div class="brand-text">
+        <div class="app-title">Pressure Calibration</div>
+        <div class="app-sub">DKD-R 6-1 · Static Web</div>
       </div>
     </div>
-  </div>
-
-  <!-- Auth bar -->
-  <header class="topbar" style="background:#0b3819;border-bottom:0;margin-bottom:8px;">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-      <div class="small" id="who" style="color:#fff;font-weight:700;">ยังไม่ได้ล็อกอิน</div>
-      <div>
-        <button id="btnSignIn" class="btn">Sign in with GitHub</button>
-        <button id="btnSignOut" class="btn ghost hidden">Sign out</button>
-      </div>
-    </div>
+    <nav id="nav" class="tabs no-wrap">
+      <button class="tab active" data-page="dashboard">Dashboard</button>
+      <button class="tab" data-page="setup">Setup</button>
+      <button class="tab" data-page="entry">Entry</button>
+      <button class="tab" data-page="uncert">Uncertainty</button>
+      <button class="tab" data-page="report">Report</button>
+      <button class="tab" data-page="charts">Charts</button>
+      <button class="tab" data-page="help">Help</button>
+    </nav>
   </header>
 
-  <!-- ===== APP WRAPPER (ซ่อนจนกว่าจะล็อกอิน) ===== -->
-  <main id="app" class="hidden">
-    <!-- 1) Dashboard -->
-    <div class="container" id="page-dashboard">
+  <main class="pagewrap">
+
+    <!-- ===== PAGE: DASHBOARD ===== -->
+    <section id="page-dashboard">
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">ทั้งหมด</div><div id="kpi-total" class="kpi-num">0</div></div>
+        <div class="kpi-card"><div class="kpi-label">กำลังดำเนินการ</div><div id="kpi-progress" class="kpi-num">0</div></div>
+        <div class="kpi-card"><div class="kpi-label">เสร็จสิ้น</div><div id="kpi-completed" class="kpi-num">0</div></div>
+        <div class="kpi-card"><div class="kpi-label">ผ่าน</div><div id="kpi-pass" class="kpi-num">0</div></div>
+        <div class="kpi-card"><div class="kpi-label">ไม่ผ่าน</div><div id="kpi-fail" class="kpi-num">0</div></div>
+      </div>
+
+      <!-- Filters -->
       <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div class="row" style="flex:1">
-            <input id="searchText" class="input" placeholder="ค้นหา: Model / Serial / เครื่องมือ" />
-            <input id="filterDateFrom" type="date" class="input"/>
-            <input id="filterDateTo" type="date" class="input"/>
-            <select id="filterStatus" class="input">
-              <option value="">ทุกสถานะ</option>
-              <option>In Progress</option><option>Completed</option><option>Pass</option><option>Fail</option>
-            </select>
-            <button class="btn" id="btnSearch">ค้นหา/กรอง</button>
-          </div>
-          <div class="row nowrap">
-            <select id="factorySelect" class="input">
-              <option value="">เลือกโรงงาน/ลูกค้า</option>
-              <option>บริษัท อธิมาตร จำกัด</option>
-              <option>บริษัท สุราบางยี่ขัน จำกัด</option>
-            </select>
-            <button class="btn" id="btnNew">+ สร้างงานใหม่</button>
-            <button class="btn ghost" id="btnPrintTag">ออก Tag อุปกรณ์</button>
-            <button class="btn warn" id="btnReset">Reset data</button>
-            <button class="btn ghost" id="btnSeed">Seed demo</button>
-          </div>
+        <div class="row gap">
+          <input id="searchText" class="input" placeholder="ค้นหาด้วย Model / Serial">
+          <input id="filterDateFrom" class="input" type="date" placeholder="วันที่เริ่ม">
+          <input id="filterDateTo" class="input" type="date" placeholder="ถึงวันที่">
+          <select id="filterStatus" class="input">
+            <option value="">สถานะทั้งหมด</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+            <option>Pass</option>
+            <option>Fail</option>
+          </select>
+          <button id="btnSearch" class="btn">ค้นหา</button>
+          <div class="spacer"></div>
+          <select id="factorySelect" class="input" placeholder="เลือกโรงงาน (ออปชัน)">
+            <option value="">— เลือกจาก Master ใน Setup ก็ได้ —</option>
+          </select>
+          <button id="btnNew" class="btn primary">+ งานใหม่</button>
         </div>
-
-        <hr class="sep"/>
-        <div class="kpi-grid">
-          <div class="kpi"><div class="label">จำนวนงานทั้งหมด</div><div class="n" id="kpi-total">0</div></div>
-          <div class="kpi"><div class="label">กำลังดำเนินการ</div><div class="n" id="kpi-progress">0</div></div>
-          <div class="kpi"><div class="label">เสร็จสิ้น</div><div class="n" id="kpi-completed">0</div></div>
-          <div class="kpi"><div class="label">ผ่าน</div><div class="n" id="kpi-pass">0</div></div>
-          <div class="kpi"><div class="label">ไม่ผ่าน</div><div class="n" id="kpi-fail">0</div></div>
-        </div>
-
-        <hr class="sep"/>
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width:30px"><input type="checkbox" id="chkAll"></th>
-              <th>Factory</th><th>Instrument</th><th>Serial</th><th>Range</th><th>Status</th><th>Date</th><th>ผล</th><th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="jobsBody"></tbody>
-        </table>
       </div>
 
-      <!-- Tags -->
-      <div class="card hidden tag-sheet" id="tagArea">
-        <div class="row" style="justify-content:space-between">
-          <div><strong>Tag *แปะอุปกรณ์</strong> — เลือกงานในตารางแล้วกด “ออก Tag อุปกรณ์”</div>
-          <div class="row">
-            <button class="btn dark" onclick="window.print()">พิมพ์เฉพาะ Tag</button>
-            <button class="btn ghost" id="btnCloseTag">ซ่อน</button>
+      <!-- Table -->
+      <div class="card">
+        <div class="row spacebetween">
+          <div class="row gap">
+            <label class="chk"><input id="chkAll" type="checkbox"> เลือกทั้งหมด</label>
+            <button id="btnPrintTag" class="btn">พิมพ์ Tag (QR)</button>
           </div>
         </div>
-        <hr class="sep"/>
-        <div class="tag-list" id="tagList"></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>ลูกค้า</th>
+                <th>ชนิด</th>
+                <th>Serial</th>
+                <th>Range</th>
+                <th>สถานะ</th>
+                <th>Cal Date</th>
+                <th>สรุป</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="jobsBody"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <!-- 2) Setup -->
-    <div class="container hidden" id="page-setup">
-      <!-- … (ส่วน Setup/Entry/Uncert/Report/Charts/Guide เหมือนของเดิมของคุณ) … -->
-      <!-- ไม่ต้องแก้อะไรเพิ่มเติมใน markup ตรงนี้ -->
-    </div>
+      <!-- Tag print area -->
+      <div id="tagArea" class="drawer hidden">
+        <div class="drawer-head">
+          <div class="title">ป้าย Tag สำหรับติดเครื่องมือ</div>
+          <button id="btnCloseTag" class="btn ghost">ปิด</button>
+        </div>
+        <div id="tagList" class="tag-grid"></div>
+      </div>
+    </section>
 
-    <!-- 3) Entry -->
-    <div class="container hidden" id="page-entry"></div>
+    <!-- ===== PAGE: SETUP ===== -->
+    <section id="page-setup" class="hidden">
+      <div class="grid-2">
+        <!-- Customer / Place -->
+        <div class="card">
+          <h3>ข้อมูลลูกค้า / สถานที่สอบเทียบ</h3>
+          <div class="row gap">
+            <div class="grow">
+              <label>Customer Company</label>
+              <input id="custCompany" class="input" list="companyList" placeholder="เลือก/พิมพ์บริษัท">
+              <datalist id="companyList"></datalist>
+            </div>
+          </div>
+          <div class="row gap">
+            <div class="grow">
+              <label>Customer Address</label>
+              <input id="custAddr" class="input" list="addressList" placeholder="เลือก/พิมพ์ที่อยู่">
+              <datalist id="addressList"></datalist>
+            </div>
+          </div>
+          <div class="row gap">
+            <div class="grow">
+              <label>Department (Place of calibration)</label>
+              <input id="placeDept" class="input" placeholder="เช่น Instrument Calibration Laboratory">
+            </div>
+          </div>
+          <div class="row gap">
+            <div class="grow">
+              <label>Place Address</label>
+              <input id="placeAddr" class="input" placeholder="ที่อยู่หน่วยงานที่ทำการสอบเทียบ">
+            </div>
+          </div>
+          <div class="row gap">
+            <div class="w-33">
+              <label>Cert No.</label>
+              <input id="certNo" class="input" placeholder="เลขที่เอกสาร">
+            </div>
+            <div class="w-33">
+              <label>Received Date</label>
+              <input id="certReceived" class="input" type="date">
+            </div>
+            <div class="w-33">
+              <label>Issue Date</label>
+              <input id="certIssue" class="input" type="date">
+            </div>
+          </div>
+        </div>
 
-    <!-- 4) Uncertainty -->
-    <div class="container hidden" id="page-uncert"></div>
+        <!-- Instrument -->
+        <div class="card">
+          <h3>ข้อมูลเครื่องมือ (Instrument)</h3>
+          <div class="row gap">
+            <div class="w-33">
+              <label>Type</label>
+              <input id="insType" class="input" placeholder="Gauge / Transmitter ...">
+            </div>
+            <div class="w-33">
+              <label>Model</label>
+              <input id="model" class="input">
+            </div>
+            <div class="w-33">
+              <label>Serial</label>
+              <input id="serial" class="input">
+            </div>
+          </div>
+          <div class="row gap">
+            <div class="w-33">
+              <label>MFG</label>
+              <input id="mfg" class="input">
+            </div>
+            <div class="w-33">
+              <label>Cal Date</label>
+              <input id="calDate" class="input" type="date">
+            </div>
+            <div class="w-33">
+              <label>Medium</label>
+              <input id="medium" class="input" placeholder="oil / air / water">
+            </div>
+          </div>
+          <div class="row gap same-height">
+            <div class="w-33">
+              <label>Range Min</label>
+              <input id="rangeMin" class="input" type="number" step="0.00001" placeholder="0">
+            </div>
+            <div class="w-33">
+              <label>Range Max</label>
+              <input id="rangeMax" class="input" type="number" step="0.00001" placeholder="10">
+            </div>
+            <div class="w-33">
+              <label>Unit</label>
+              <select id="unit" class="input">
+                <option>bar</option><option>kPa</option><option>Pa</option><option>psi</option><option>mmHg</option>
+              </select>
+            </div>
+          </div>
+          <div class="row gap same-height">
+            <div class="w-33">
+              <label>Ambient Temp (°C)</label>
+              <input id="envTemp" class="input" type="number" step="0.01">
+            </div>
+            <div class="w-33">
+              <label>Humidity (%RH)</label>
+              <input id="envHumid" class="input" type="number" step="0.01">
+            </div>
+            <div class="w-33">
+              <label>Atm (mbar)</label>
+              <input id="envAtm" class="input" type="number" step="0.01">
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- 5) Report -->
-    <div class="container hidden" id="page-report"></div>
+      <div class="grid-2">
+        <!-- Accuracy / Sequence / Points -->
+        <div class="card">
+          <h3>Accuracy / Sequence / จุดสอบเทียบ</h3>
+          <div class="row gap">
+            <div class="w-33">
+              <label>Accuracy Class</label>
+              <select id="accClass" class="input">
+                <option value="">—</option>
+                <option>&lt; 0.1%</option>
+                <option>0.1% - 0.6%</option>
+                <option>&gt; 0.6%</option>
+              </select>
+            </div>
+            <div class="w-67">
+              <label>Sequence</label>
+              <input id="sequence" class="input" readonly placeholder="จะกำหนดอัตโนมัติเมื่อเลือก Accuracy Class">
+            </div>
+          </div>
+          <div class="row gap">
+            <button id="btnAutoPoints" class="btn">สร้างจุดอัตโนมัติ</button>
+            <button id="btnClearPoints" class="btn warn">ล้างจุด</button>
+          </div>
+          <div id="pointsBox" class="points-box"></div>
+        </div>
 
-    <!-- 6) Charts -->
-    <div class="container hidden" id="page-charts"></div>
+        <!-- Standard(s) -->
+        <div class="card">
+          <h3>Standard Reference</h3>
+          <div class="row gap">
+            <div class="w-33"><label>Std Name</label><input id="stdName" class="input"></div>
+            <div class="w-33"><label>Std Serial</label><input id="stdSerial" class="input"></div>
+            <div class="w-33"><label>Accuracy (bar)</label><input id="stdAcc" class="input" type="number" step="0.000001"></div>
+          </div>
+          <div class="row gap">
+            <div class="w-33"><label>Resolution (bar)</label><input id="stdRes" class="input" type="number" step="0.000001"></div>
+            <div class="w-67"><label>Certificate</label><input id="stdCert" class="input"></div>
+          </div>
 
-    <!-- 7) Guide -->
-    <div class="container hidden" id="page-help"></div>
+          <h4 class="mt">Standards Used (ตาราง)</h4>
+          <div class="row gap">
+            <input id="stdIn_serial" class="input" placeholder="Serial">
+            <input id="stdIn_cert" class="input" placeholder="Cert No.">
+            <input id="stdIn_calDate" class="input" type="date" placeholder="Cal Date">
+            <input id="stdIn_dueDate" class="input" type="date" placeholder="Due Date">
+          </div>
+          <div class="row gap">
+            <input id="stdIn_desc" class="input grow" placeholder="Description/Name">
+            <select id="stdIn_status" class="input w-33"><option>OK</option><option>Expired</option></select>
+            <button id="addStdRow" class="btn">+ เพิ่ม</button>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Serial</th><th>Cert</th><th>Cal Date</th><th>Due Date</th><th>Description</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="stdList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-    <footer class="container small">© 2025 Pressure Calibration — DKD-R 6-1</footer>
+      <!-- Signatures & Limits -->
+      <div class="grid-2">
+        <div class="card">
+          <h3>Signatures</h3>
+          <div class="grid-3">
+            <div>
+              <label>Technician Name</label><input id="sigTechName" class="input">
+              <label>Title</label><input id="sigTechTitle" class="input">
+              <label>Date</label><input id="sigTechDate" class="input" type="date">
+            </div>
+            <div>
+              <label>Reviewer Name</label><input id="sigRevName" class="input">
+              <label>Title</label><input id="sigRevTitle" class="input">
+              <label>Date</label><input id="sigRevDate" class="input" type="date">
+            </div>
+            <div>
+              <label>Approver Name</label><input id="sigAppName" class="input">
+              <label>Title</label><input id="sigAppTitle" class="input">
+              <label>Date</label><input id="sigAppDate" class="input" type="date">
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Limits & Options</h3>
+          <div class="row gap">
+            <div class="w-33">
+              <label>Acceptance (bar)</label>
+              <input id="accLimitBar" class="input" type="number" step="0.000001" placeholder="เว้นว่าง = 0.1%FS Auto">
+            </div>
+            <div class="w-33">
+              <label>Plant Limit (bar)</label>
+              <input id="plantLimitBar" class="input" type="number" step="0.000001">
+            </div>
+            <div class="w-33">
+              <label>Enable Correction</label>
+              <select id="enableCorrection" class="input"><option>Yes</option><option>No</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row end mt">
+        <button id="btnSaveSetup" class="btn primary">บันทึก & ไป Entry</button>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: ENTRY ===== -->
+    <section id="page-entry" class="hidden">
+      <div class="card">
+        <h3>Measurement Entry</h3>
+        <div id="entryTableWrap" class="table-wrap"></div>
+        <div class="row end mt">
+          <button id="btnSaveEntry" class="btn primary">บันทึก & ไป Uncertainty</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: UNCERTAINTY ===== -->
+    <section id="page-uncert" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <h3>คำนวณความไม่แน่นอน (Uncertainty Inputs)</h3>
+          <div class="grid-3 same-height">
+            <div><label>u_standard</label><input id="u_standard" class="input" type="number" step="0.000001" placeholder="acc/√3"></div>
+            <div><label>u_res_std</label><input id="u_res_std" class="input" type="number" step="0.000001" placeholder="res/(2√3)"></div>
+            <div><label>u_zero</label><input id="u_zero" class="input" type="number" step="0.000001"></div>
+            <div><label>u_repeat</label><input id="u_repeat" class="input" type="number" step="0.000001"></div>
+            <div><label>u_hyst</label><input id="u_hyst" class="input" type="number" step="0.000001"></div>
+          </div>
+          <div class="row gap mt">
+            <button id="btnAutoFromData" class="btn">Auto จากข้อมูล</button>
+            <button id="btnSaveUncert" class="btn primary">บันทึก & ไป Report</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>สรุป</h3>
+          <div id="uncertSummary" class="well">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: REPORT ===== -->
+    <section id="page-report" class="hidden">
+      <div id="reportCard" class="report-card">
+        <div class="report-head">
+          <div class="report-title">Calibration Report</div>
+          <div id="rVerdict" class="report-badge">—</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="well">
+            <div><b>Customer</b>: <span id="rCustomer">—</span></div>
+            <div class="small"><span id="rCustAddr">—</span></div>
+            <div class="mt"><b>Place</b>: <span id="rPlaceCompany">—</span></div>
+            <div class="small"><span id="rPlaceAddr">—</span></div>
+          </div>
+          <div class="well">
+            <div><b>Cert No.</b>: <span id="rCertNo">—</span></div>
+            <div>Received: <span id="rReceived">—</span> | Issue: <span id="rIssueDate">—</span></div>
+            <div>Cal Date: <span id="rCalDate">—</span></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="well">
+            <div><b>Instrument</b>: <span id="rType">—</span></div>
+            <div>Model: <span id="rModel">—</span> | S/N: <span id="rSerial">—</span></div>
+            <div>MFG: <span id="rMfg">—</span></div>
+            <div>Measuring Range: <span id="rMeasureRange">—</span></div>
+            <div>Calibration Range: <span id="rCalRange">—</span></div>
+          </div>
+          <div class="well">
+            <div>Resolution: <span id="rResolution">—</span></div>
+            <div>MPE: <span id="rMPE">—</span></div>
+            <div>Plant Limit: <span id="rPlantLimit">—</span></div>
+            <div>U (k=2): <span id="rU">—</span></div>
+            <div>Ambient: T=<span id="rAmbT">—</span> °C, H=<span id="rAmbH">—</span> %RH, P=<span id="rAmbP">—</span> mbar</div>
+          </div>
+        </div>
+
+        <h4 class="mt">Standards Used</h4>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Serial</th><th>Cert</th><th>Cal Date</th><th>Due Date</th><th>Description</th><th>Status</th></tr>
+            </thead>
+            <tbody id="stdBody"></tbody>
+          </table>
+        </div>
+
+        <h4 class="mt">Measurement Result (key columns)</h4>
+        <div id="resultTableWrap" class="table-wrap"></div>
+
+        <!-- Signatures (bottom spacing for real signature paste) -->
+        <div class="signature-area">
+          <div class="sig">
+            <div class="sig-line"></div>
+            <div class="sig-meta">
+              <div id="sigTechNameOut">—</div>
+              <div class="small" id="sigTechTitleOut">—</div>
+              <div class="small" id="sigTechDateOut">—</div>
+            </div>
+          </div>
+          <div class="sig">
+            <div class="sig-line"></div>
+            <div class="sig-meta">
+              <div id="sigRevNameOut">—</div>
+              <div class="small" id="sigRevTitleOut">—</div>
+              <div class="small" id="sigRevDateOut">—</div>
+            </div>
+          </div>
+          <div class="sig">
+            <div class="sig-line"></div>
+            <div class="sig-meta">
+              <div id="sigAppNameOut">—</div>
+              <div class="small" id="sigAppTitleOut">—</div>
+              <div class="small" id="sigAppDateOut">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row end mt">
+        <button id="btnMakePDF" class="btn">Export PDF</button>
+        <button id="btnCSV" class="btn">Export CSV</button>
+        <button id="btnDrive" class="btn">ส่งไป Google Drive</button>
+      </div>
+
+      <div class="card mt">
+        <h3>AI Analysis</h3>
+        <div id="aiNote" class="well">—</div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: CHARTS ===== -->
+    <section id="page-charts" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Accuracy (ref)</h3>
+          <canvas id="chartAccuracy" height="160"></canvas>
+        </div>
+        <div class="card">
+          <h3>Error (Deviation) vs MPE</h3>
+          <canvas id="chartError" height="160"></canvas>
+        </div>
+        <div class="card">
+          <h3>Error + U(k=2)</h3>
+          <canvas id="chartErrPlusU" height="160"></canvas>
+        </div>
+        <div class="card">
+          <h3>Error − U(k=2)</h3>
+          <canvas id="chartErrMinusU" height="160"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>คำอธิบายกราฟ</h3>
+        <div id="aiCharts" class="well">—</div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: HELP ===== -->
+    <section id="page-help" class="hidden">
+      <div class="card">
+        <h3>วิธีใช้งานสั้น ๆ</h3>
+        <ol>
+          <li>ไปที่หน้า <b>Setup</b> กรอกข้อมูลเครื่องมือ/ลูกค้า/จุดสอบเทียบ แล้วกด “บันทึก & ไป Entry”.</li>
+          <li>หน้า <b>Entry</b> กรอก STD และ UUC ให้ครบ ระบบจะคำนวณค่าเฉลี่ย/Deviation ให้อัตโนมัติ.</li>
+          <li>หน้า <b>Uncertainty</b> กด “Auto จากข้อมูล” หรือกรอกเอง แล้ว “บันทึก & ไป Report”.</li>
+          <li>หน้า <b>Report</b> โหลดสรุปและตารางผล กด Export PDF/CSV ได้ทันที.</li>
+          <li>หน้า <b>Charts</b> ดูกราฟ Error และเกณฑ์ MPE.</li>
+        </ol>
+      </div>
+    </section>
+
   </main>
 
-  <!-- โหลดสคริปต์หลัก (ตัวเดียวพอ) -->
-  <script type="module" src="js/app.js"></script>
-  <noscript>โปรดเปิดใช้ JavaScript</noscript>
+  <!-- ===== Scripts (CDN) ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- ===== App ===== -->
+  <script src="app.js"></script>
 </body>
 </html>
