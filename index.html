@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pressure Calibration — DKD-R 6-1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="topbar">
+        <div class="container">
+            <div class="top-title">Pressure Calibration — DKD-R 6-1</div>
+            <div class="tabs" id="nav">
+                <button class="tab active" data-page="dashboard">1) Dashboard</button>
+                <button class="tab" data-page="setup">2) Calibration Setup</button>
+                <button class="tab" data-page="entry">3) Measurement Entry</button>
+                <button class="tab" data-page="uncert">4) Uncertainty</button>
+                <button class="tab" data-page="report">5) Report</button>
+                <button class="tab" data-page="charts">6) Charts</button>
+                <button class="tab" data-page="help">7) Guide</button>
+            </div>
+        </div>
+    </div>
+
+<!-- 1) Dashboard -->
+<div class="container" id="page-dashboard">
+    <div class="card">
+        <div class="row" style="justify-content:space-between; align-items: center; margin-bottom: 12px;">
+            <div class="row" style="flex:1; gap: 12px;">
+                <input id="searchText" class="input" placeholder="ค้นหา: Model / Serial / เครื่องมือ / โรงงาน" style="flex: 1; min-width: 250px;" />
+                <select id="filterStatus" class="input" style="min-width: 150px;">
+                    <option value="">ทุกสถานะ</option>
+                    <option>In Progress</option>
+                    <option>Completed</option>
+                    <option>Pass</option>
+                    <option>Fail</option>
+                </select>
+                <div class="searchable-dropdown" style="position: relative; flex: 1; min-width: 250px;">
+                    <input id="factorySelect" class="input" placeholder="เลือกโรงงาน/ลูกค้า" autocomplete="off" style="width: 100%;" />
+                    <div id="factoryDropdown" class="dropdown-content"></div>
+                </div>
+                <button class="btn" id="btnSearch">ค้นหา/กรอง</button>
+            </div>
+            <div class="row" style="gap: 8px;">
+                <button class="btn" id="btnNew">+ สร้างงานใหม่</button>
+                <button class="btn ghost" id="btnPrintTag">ออก Tag อุปกรณ์</button>
+            </div>
+        </div>
+        
+        <hr class="sep"/>
+        <div class="kpi-grid">
+            <div class="kpi"><div class="label">จำนวนงานทั้งหมด</div><div class="n" id="kpi-total">0</div></div>
+            <div class="kpi"><div class="label">กำลังดำเนินการ</div><div class="n" id="kpi-progress">0</div></div>
+            <div class="kpi"><div class="label">เสร็จสิ้น</div><div class="n" id="kpi-completed">0</div></div>
+            <div class="kpi"><div class="label">ผ่าน</div><div class="n" id="kpi-pass">0</div></div>
+            <div class="kpi"><div class="label">ไม่ผ่าน</div><div class="n" id="kpi-fail">0</div></div>
+        </div>
+
+        <hr class="sep"/>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width:30px"><input type="checkbox" id="chkAll"></th>
+                    <th>Factory</th><th>Instrument</th><th>Serial</th><th>Range</th><th>Status</th><th>Date</th><th>ผล</th><th>จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="jobsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Tags (print only tags) -->
+    <div class="card hidden tag-sheet" id="tagArea">
+        <div class="row" style="justify-content:space-between">
+            <div><strong>Tag *แปะอุปกรณ์</strong> — เลือกงานในตารางแล้วกด "ออก Tag อุปกรณ์"</div>
+            <div class="row">
+                <button class="btn dark" onclick="window.print()">พิมพ์เฉพาะ Tag</button>
+                <button class="btn ghost" id="btnCloseTag">ซ่อน</button>
+            </div>
+        </div>
+        <hr class="sep"/>
+        <div class="tag-list" id="tagList"></div>
+    </div>
+</div>
+
+<!-- 2) Setup -->
+<div class="container hidden" id="page-setup">
+    <div class="card">
+        <div class="row" style="justify-content:space-between">
+            <div><strong>Calibration Setup</strong></div>
+            <button class="btn" id="btnSaveSetup">บันทึก/ถัดไป</button>
+        </div>
+        <hr class="sep"/>
+
+        <!-- Customer & Place & Certificate -->
+        <div class="grid grid-2">
+            <div class="blk">
+                <div class="label">Customer Information</div>
+                <label>Company</label>
+                <div class="searchable-dropdown" style="position: relative;">
+                    <input id="custCompany" class="input" placeholder="ค้นหาหรือเลือกบริษัท" autocomplete="off" style="width: 100%;" />
+                    <div id="custCompanyDropdown" class="dropdown-content"></div>
+                </div>
+                <label>Address</label>
+                <div class="searchable-dropdown" style="position: relative;">
+                    <input id="custAddr" class="input" placeholder="ค้นหาหรือเลือกที่อยู่" autocomplete="off" style="width: 100%;" />
+                    <div id="custAddrDropdown" class="dropdown-content"></div>
+                </div>
+            </div>
+            <div class="blk">
+                <div class="label">Place of calibration</div>
+                <label>Department</label>
+                <div class="searchable-dropdown" style="position: relative;">
+                    <input id="placeDepartment" class="input" placeholder="ค้นหาหรือเลือกแผนก" autocomplete="off" style="width: 100%;" />
+                    <div id="placeDepartmentDropdown" class="dropdown-content"></div>
+                </div>
+                <!-- ลบช่อง Address ออกเพราะซ้ำกับ Customer Information -->
+            </div>
+        </div>
+
+        <div class="grid grid-3" style="margin-top:12px">
+            <div class="blk">
+                <div class="label">Certificate</div>
+                <label>No.</label><input id="certNo" class="input" placeholder="เลขที่ใบรับรอง"/>
+                <label>Received</label><input id="certReceived" class="input" type="date"/>
+                <label>Issue Date</label><input id="certIssue" class="input" type="date"/>
+            </div>
+
+            <div class="blk">
+                <div class="label">Instrument (UUC)</div>
+                <label>Instrument Type *</label>
+                <select id="insType" class="input">
+                    <option value="">เลือก</option><option>Bourdon Tube Gauge</option><option>Electric Pressure Gauge</option><option>Pressure Transmitter</option>
+                </select>
+                <label>Serial Number *</label><input id="serial" class="input" placeholder="PT-2025-001"/>
+                <label>Model *</label><input id="model" class="input" placeholder="3051C"/>
+                <label>Manufacturer</label><input id="mfg" class="input" placeholder="Rosemount"/>
+            </div>
+
+            <div class="blk">
+                <div class="label">Ranges & Environment</div>
+                <label>Measurement Range (min—max) *</label>
+                <div class="range-inputs">
+                    <input id="rangeMin" class="input" type="number" placeholder="0" style="max-width:160px">
+                    <span>—</span>
+                    <input id="rangeMax" class="input" type="number" placeholder="10" style="max-width:160px">
+                    <select id="unit" class="input" style="max-width:130px">
+                        <option>bar</option><option>kPa</option><option>mmHg</option><option>psi</option><option>Pa</option>
+                    </select>
+                </div>
+                <div class="helper">ตัวอย่าง: 0—10 bar</div>
+
+                <label>Medium *</label>
+                <select id="medium" class="input"><option>Air</option><option>Nitrogen</option><option>Oil</option><option>Water</option></select>
+                <label>Calibration Date *</label><input id="calDate" class="input" type="date"/>
+
+                <!-- Env equal level -->
+                <div class="env-grid" style="margin-top:8px">
+                    <div><label>Temp (°C) *</label><input id="envTemp" class="input" type="number" placeholder="18-28"></div>
+                    <div><label>Humidity (%RH)</label><input id="envHumid" class="input" type="number" placeholder="50"></div>
+                    <div><label>Atm (mbar) *</label><input id="envAtm" class="input" type="number" placeholder="1013"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accuracy / Points -->
+        <hr class="sep"/>
+        <div class="grid grid-3">
+            <div>
+                <label>Accuracy Class *</label>
+                <select id="accClass" class="input">
+                    <option value="">เลือก</option><option>&lt; 0.1%</option><option>0.1% - 0.6%</option><option>&gt; 0.6%</option>
+                </select>
+                <div class="helper">ระบบเลือก Sequence ให้อัตโนมัติ</div>
+            </div>
+            <div>
+                <label>Calibration Sequence (Auto)</label>
+                <input id="sequence" class="input" readonly placeholder="A/B/C by Accuracy Class"/>
+                <div class="helper">A: 2Up+2Down (9 pts) • B: 2Up+1Down (9 pts) • C: 1Up+1Down (5 pts)</div>
+            </div>
+            <div>
+                <label>Calibration Points (bar) *</label>
+                <div class="row">
+                    <button class="btn ghost" id="btnAutoPoints">สร้างจุดอัตโนมัติ</button>
+                    <button class="btn ghost" id="btnClearPoints">ล้าง</button>
+                </div>
+            </div>
+        </div>
+        <div id="pointsBox" class="grid grid-4" style="margin-top:10px"></div>
+
+        <!-- Standards used -->
+        <hr class="sep"/>
+        <div class="blk">
+            <div class="label">Standards used</div>
+            <div class="row">
+                <input id="stdIn_serial" class="input" placeholder="Serial No." style="max-width:160px">
+                <input id="stdIn_cert" class="input" placeholder="Certificate No." style="max-width:180px">
+                <input id="stdIn_calDate" class="input" type="date" style="max-width:160px">
+                <input id="stdIn_dueDate" class="input" type="date" style="max-width:160px">
+                <input id="stdIn_desc" class="input" placeholder="Description" style="flex:1">
+                <select id="stdIn_status" class="input" style="max-width:140px"><option>OK</option><option>DUE</option><option>EXPIRED</option></select>
+                <button class="btn" id="addStdRow">เพิ่ม</button>
+            </div>
+            <table class="table" style="margin-top:8px">
+                <thead><tr><th>Serial</th><th>Certificate</th><th>Calibration date</th><th>Due date</th><th>Description</th><th>Status</th><th></th></tr></thead>
+                <tbody id="stdList"></tbody>
+            </table>
+        </div>
+
+        <!-- Signatures -->
+        <hr class="sep"/>
+        <div class="blk">
+            <div class="label">Signatures / Names</div>
+            <div class="sig-grid">
+                <div>
+                    <label>Technician Name *</label><input id="sigTechName" class="input" placeholder="ผู้ปฏิบัติการสอบเทียบ">
+                    <label>Technician Title</label><input id="sigTechTitle" class="input" placeholder="ตำแหน่ง">
+                    <label>Technician Date</label><input id="sigTechDate" class="input" type="date">
+                </div>
+                <div>
+                    <label>Reviewer Name</label><input id="sigRevName" class="input" placeholder="ผู้ตรวจทาน">
+                    <label>Reviewer Title</label><input id="sigRevTitle" class="input" placeholder="ตำแหน่ง">
+                    <label>Reviewer Date</label><input id="sigRevDate" class="input" type="date">
+                </div>
+                <div>
+                    <label>Approver Name</label><input id="sigAppName" class="input" placeholder="ผู้อนุมัติ">
+                    <label>Approver Title</label><input id="sigAppTitle" class="input" placeholder="ตำแหน่ง">
+                    <label>Approver Date</label><input id="sigAppDate" class="input" type="date">
+                </div>
+            </div>
+        </div>
+
+        <!-- Limits -->
+        <hr class="sep"/>
+        <div class="blk">
+            <div class="label">Acceptance / Plant Limit</div>
+            <div class="grid grid-3">
+                <div><label>MPE / Acceptance (bar)</label><input id="accLimitBar" class="input" type="number" placeholder="เว้นว่าง=0.1%FS"></div>
+                <div><label>Factory Limit (bar)</label><input id="plantLimitBar" class="input" type="number" placeholder="ลิมิตเฉพาะโรงงาน (ถ้ามี)"></div>
+                <div><label>แนะนำค่าแก้</label><select id="enableCorrection" class="input"><option>Yes</option><option>No</option></select></div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- 3) Entry -->
+    <div class="container hidden" id="page-entry">
+        <div class="card">
+            <div class="row" style="justify-content:space-between">
+                <div><strong>Measurement Data Entry — STD/UUC (คำนวณอัตโนมัติ)</strong></div>
+                <div class="row"><button class="btn ghost" id="btnSaveEntry">บันทึก</button></div>
+            </div>
+            <hr class="sep"/>
+            <div class="grid grid-3">
+                <div><label>Standard Name</label><input id="stdName" class="input" placeholder="Deadweight Tester"/></div>
+                <div><label>Standard Serial</label><input id="stdSerial" class="input" placeholder="DWT-001"/></div>
+                <div><label>Standard Accuracy (% หรือ ค่าสัมบูรณ์)</label><input id="stdAcc" class="input" type="number" placeholder="0.02"/></div>
+                <div><label>Standard Resolution (bar)</label><input id="stdRes" class="input" type="number" placeholder="0.001"/></div>
+                <div><label>Standard Certificate No.</label><input id="stdCert" class="input" placeholder="CAL-2025-001"/></div>
+            </div>
+            <hr class="sep"/>
+            <div id="entryTableWrap" class="card"></div>
+            <div class="small">อัปเดตค่าใดๆ ระบบจะคำนวณใหม่ทันที (Avg, Deviation, Hysteresis)</div>
+        </div>
+    </div>
+
+    <!-- 4) Uncertainty -->
+    <div class="container hidden" id="page-uncert">
+        <div class="card">
+            <div class="row" style="justify-content:space-between">
+                <div><strong>Uncertainty Calculation</strong></div>
+                <div class="row">
+                    <button class="btn dark" id="btnAutoFromData">Auto-fill จากข้อมูล</button>
+                    <button class="btn ghost" id="btnSaveUncert">บันทึก</button>
+                </div>
+            </div>
+            <hr class="sep"/>
+
+            <div class="grid grid-3">
+                <div><label>u_standard</label><input id="u_standard" class="input" type="number" placeholder="Accuracy_STD/√3"><div class="small">ตัวอย่าง: STD 0.02 bar → u_standard ≈ 0.02/√3</div></div>
+                <div><label>u_resolution_std</label><input id="u_res_std" class="input" type="number" placeholder="Resolution_STD/(2√3)"><div class="small">ตัวอย่าง: res 0.001 bar → 0.001/(2√3)</div></div>
+                <div><label>u_zero</label><input id="u_zero" class="input" type="number" placeholder="max(Zero Deviation)/√3"><div class="small">อิง dev ที่จุด 0 bar</div></div>
+                <div><label>u_repeatability</label><input id="u_repeat" class="input" type="number" placeholder="SD/√n"><div class="small">SD ของ deviation ทุกจุด / √n</div></div>
+                <div><label>u_hysteresis</label><input id="u_hyst" class="input" type="number" placeholder="Mean(Hysteresis)/√3"><div class="small">ค่าเฉลี่ยฮิสเทอรีซีส</div></div>
+                <div class="blk">U (k=2) = 2 × √( u_std² + u_res² + u_zero² + u_repeat² + u_hyst² )<div class="small">ระบบจะคำนวณผลรวมและสรุป Pass/Fail อัตโนมัติ</div></div>
+            </div>
+
+            <hr class="sep"/>
+            <div class="uncertainty-explanation">
+                <h4>คำอธิบายการคำนวณความไม่แน่นอน</h4>
+                <p>การคำนวณความไม่แน่นอนในการสอบเทียบเครื่องวัดความดันประกอบด้วยปัจจัยหลายอย่าง ดังนี้:</p>
+                <ul>
+                    <li><strong>u_standard:</strong> ความไม่แน่นอนจากเครื่องมือมาตรฐาน คำนวณจากค่าความแม่นยำของเครื่องมือมาตรฐานหารด้วย √3</li>
+                    <li><strong>u_resolution_std:</strong> ความไม่แน่นอนจากความละเอียดของเครื่องมือมาตรฐาน คำนวณจากค่าความละเอียดหารด้วย 2√3</li>
+                    <li><strong>u_zero:</strong> ความไม่แน่นอนจากจุดศูนย์ คำนวณจากค่าความคลาดเคลื่อนสูงสุดที่จุดศูนย์หารด้วย √3</li>
+                    <li><strong>u_repeatability:</strong> ความไม่แน่นอนจากการทำซ้ำ คำนวณจากส่วนเบี่ยงเบนมาตรฐานของค่าความคลาดเคลื่อนทุกจุดหารด้วย √n (n คือจำนวนการวัด)</li>
+                    <li><strong>u_hysteresis:</strong> ความไม่แน่นอนจากฮิสเทอรีซิส คำนวณจากค่าเฉลี่ยของฮิสเทอรีซิสหารด้วย √3</li>
+                </ul>
+                <p>ความไม่แน่นอนรวม (U) คำนวณจากสูตร: U = k × √(u₁² + u₂² + ... + uₙ²) โดย k=2 สำหรับระดับความเชื่อมั่น 95%</p>
+            </div>
+            <hr class="sep"/>
+            <div id="uncertSummary" class="small"></div>
+        </div>
+    </div>
+
+    <!-- 5) Report -->
+    <div class="container hidden" id="page-report">
+        <div class="card" id="reportCard">
+            <div class="report-head">
+                <div class="blk">
+                    <div class="report-header">
+                        <div class="logo-container">
+                            <img src="https://i.imgur.com/8jGxM1U.png" alt="ThaiBev Logo" class="company-logo">
+                        </div>
+                        <div class="header-text">
+                            <div class="label">Instrument Calibration Office of Technical For Spirit Production</div>
+                            <div class="small">260 Sangsom Building, Phaholyothin Road, Samsen-ai, Phayathai, Bangkok 10400 • Tel. 02-278-4321 # 5115</div>
+                        </div>
+                    </div>
+                    <hr class="sep"/>
+                    <div class="report-grid report-2">
+                        <div><b>Customer</b><br>Company: <span id="rCustomer">—</span><br>Address: <span id="rCustAddr">—</span></div>
+                        <div><b>Place of calibration</b><br>Department: <span id="rPlaceDepartment">—</span><br>Address: <span id="rPlaceAddr">—</span></div>
+                    </div>
+                </div>
+                <div class="blk">
+                    <div class="label">Certificate</div>
+                    <div>No.: <span id="rCertNo">—</span></div>
+                    <div>Received: <span id="rReceived">—</span></div>
+                    <div>Calibration: <span id="rCalDate">—</span></div>
+                    <div>Issue Date: <span id="rIssueDate">—</span></div>
+                </div>
+            </div>
+
+            <hr class="sep"/>
+
+            <div class="report-grid report-3">
+                <div class="blk">
+                    <div class="label">Instrument (UUC)</div>
+                    <div>Type: <span id="rType">—</span></div>
+                    <div>Model/Code: <span id="rModel">—</span></div>
+                    <div>Serial No.: <span id="rSerial">—</span></div>
+                    <div>Manufacturer: <span id="rMfg">—</span></div>
+                </div>
+                <div class="blk">
+                    <div class="label">Ranges & Specs</div>
+                    <div>Measuring range: <span id="rMeasureRange">—</span></div>
+                    <div>Calibration range: <span id="rCalRange">—</span></div>
+                    <div>Resolution: <span id="rResolution">—</span></div>
+                    <div>MPE/Acceptance: <span id="rMPE">—</span></div>
+                    <div>Factory Limit: <span id="rPlantLimit">—</span></div>
+                </div>
+                <div class="blk">
+                    <div class="label">Result Status</div>
+                    <div>Result of Calibration: <span id="rVerdict"><span class="badge">—</span></span></div>
+                    <div>U (k=2): <span id="rU">—</span></div>
+                </div>
+            </div>
+
+            <hr class="sep"/>
+
+            <div class="blk">
+                <div class="label">Standards used</div>
+                <table class="table" id="stdTable">
+                    <thead><tr><th>Serial No.</th><th>Certificate No.</th><th>Calibration date</th><th>Due date</th><th>Description</th><th>Status</th></tr></thead>
+                    <tbody id="stdBody"></tbody>
+                </table>
+            </div>
+
+            <hr class="sep"/>
+
+            <div class="blk">
+                <div class="label">Environment Conditions</div>
+                <div>T: <span id="rAmbT">—</span> °C, RH: <span id="rAmbH">—</span> %RH, Atm: <span id="rAmbP">—</span> mbar</div>
+            </div>
+
+            <hr class="sep"/>
+
+            <div class="blk">
+                <div class="label">Measurement Result</div>
+                <div id="resultTableWrap"></div>
+                <div class="small">หัวตาราง: Reference Standard Reading [bar] (1) • UUC* Reading [bar] • Result Measurement Deviation [bar] (2)-(1) • Uncertainty [bar] • UUC* Reading Calculation Pressure [bar] (2) • Result [Pass/Fail]</div>
+            </div>
+
+            <hr class="sep"/>
+
+            <div class="blk">
+                <div class="label">Analysis (AI-like)</div>
+                <div id="aiNote" class="small"></div>
+            </div>
+
+            <hr class="sep"/>
+            <div class="blk">
+                <div class="label">Signatures</div>
+                <div class="sig-grid">
+                    <div><div class="sig-box"><div id="sigTechNameOut">—</div><div class="small" id="sigTechTitleOut">—</div><div class="small" id="sigTechDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Technician</div></div>
+                    <div><div class="sig-box"><div id="sigRevNameOut">—</div><div class="small" id="sigRevTitleOut">—</div><div class="small" id="sigRevDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Reviewer</div></div>
+                    <div><div class="sig-box"><div id="sigAppNameOut">—</div><div class="small" id="sigAppTitleOut">—</div><div class="small" id="sigAppDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Approver</div></div>
+                </div>
+            </div>
+
+            <hr class="sep"/>
+            <div class="row" style="justify-content:flex-end">
+                <button class="btn" id="btnMakePDF">Export PDF</button>
+                <button class="btn ghost" id="btnCSV">Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6) Charts -->
+    <div class="container hidden" id="page-charts">
+        <div class="card">
+            <div class="row" style="justify-content:space-between"><div><strong>Charts</strong> — Accuracy/Errors/Uncertainty</div></div>
+            <hr class="sep"/>
+            <div class="grid grid-2">
+                <div class="blk">
+                    <canvas id="chartAccuracy"></canvas>
+                    <div class="chart-explanation">
+                        <h4>กราฟความแม่นยำ (Accuracy Chart)</h4>
+                        <p>กราฟนี้แสดงค่าความคลาดเคลื่อนของเครื่องวัดที่แต่ละจุดสอบเทียบ โดยเปรียบเทียบกับขีดจำกัดการยอมรับ (Acceptance Limit) ที่กำหนดไว้</p>
+                        <ul>
+                            <li>เส้นสีเขียว: ค่าความคลาดเคลื่อนที่แต่ละจุดสอบเทียบ</li>
+                            <li>เส้นประสีแดง: ขีดจำกัดการยอมรับบวกและลบ</li>
+                            <li>ถ้าค่าความคลาดเคลื่อนอยู่ภายในขีดจำกัด แสดงว่าเครื่องวัดผ่านเกณฑ์</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="blk">
+                    <canvas id="chartError"></canvas>
+                    <div class="chart-explanation">
+                        <h4>กราฟความคลาดเคลื่อน (Error Chart)</h4>
+                        <p>กราฟนี้แสดงค่าความคลาดเคลื่อนของเครื่องวัดในรูปแบบแท่ง โดยสีของแท่งจะบ่งบอกสถานะการผ่าน/ไม่ผ่านเกณฑ์</p>
+                        <ul>
+                            <li>แท่งสีเขียว: ค่าความคลาดเคลื่อนที่อยู่ภายในขีดจำกัดการยอมรับ</li>
+                            <li>แท่งสีแดง: ค่าความคลาดเคลื่อนที่เกินขีดจำกัดการยอมรับ</li>
+                            <li>ความสูงของแท่งแสดงขนาดของความคลาดเคลื่อน</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-2" style="margin-top:12px">
+                <div class="blk">
+                    <canvas id="chartErrPlusU"></canvas>
+                    <div class="chart-explanation">
+                        <h4>กราฟความคลาดเคลื่อนบวกความไม่แน่นอน (Error + Uncertainty Chart)</h4>
+                        <p>กราฟนี้แสดงผลรวมของค่าความคลาดเคลื่อนและค่าความไม่แน่นอน (Error + U) ซึ่งเป็นค่าที่ใช้ในการตัดสินใจว่าเครื่องวัดผ่านเกณฑ์หรือไม่</p>
+                        <ul>
+                            <li>เส้นสีเขียว: ค่า Error + U ที่แต่ละจุดสอบเทียบ</li>
+                            <li>เส้นประสีแดง: ขีดจำกัดการยอมรับ</li>
+                            <li>ถ้าค่า Error + U น้อยกว่าหรือเท่ากับขีดจำกัด แสดงว่าเครื่องวัดผ่านเกณฑ์</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="blk">
+                    <canvas id="chartErrMinusU"></canvas>
+                    <div class="chart-explanation">
+                        <h4>กราฟความคลาดเคลื่อนลบความไม่แน่นอน (Error - Uncertainty Chart)</h4>
+                        <p>กราฟนี้แสดงผลต่างของค่าความคลาดเคลื่อนและค่าความไม่แน่นอน (Error - U) ซึ่งแสดงขอบเขตล่างของค่าความคลาดเคลื่อนที่เป็นไปได้</p>
+                        <ul>
+                            <li>เส้นสีเขียว: ค่า Error - U ที่แต่ละจุดสอบเทียบ</li>
+                            <li>เส้นประสีแดง: ขีดจำกัดการยอมรับลบ</li>
+                            <li>ถ้าค่า Error - U มากกว่าหรือเท่ากับขีดจำกัดลบ แสดงว่าเครื่องวัดผ่านเกณฑ์</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <hr class="sep"/>
+            <div class="blk">
+                <div class="label">AI Chart Insights</div>
+                <div id="aiCharts" class="small"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7) Guide -->
+    <div class="container hidden" id="page-help">
+        <div class="card">
+            <h3>Formula & Guide (ละเอียด)</h3>
+            <div class="grid grid-2">
+                <div class="blk">
+                    <div class="label">สูตรหลักสำหรับการสอบเทียบ</div>
+                    <ol>
+                        <li><b>แก้ความดันตามระดับความสูง</b>: ΔP = (ρ<sub>f</sub> − ρ<sub>a</sub>)·g·Δh</li>
+                        <li><b>Zero correction</b>:
+                            N₁,ⱼ = U₁,ⱼ; N₂,ⱼ = (S₁,ⱼ − S₂,ⱼ)+U₂,ⱼ;
+                            M₁,ⱼ = N₁,ⱼ − N₁,₀; M₂,ⱼ = N₂,ⱼ − N₁,₀
+                        </li>
+                        <li><b>แปลงสัญญาณเป็นความดัน</b> (4–20mA): P = P<sub>min</sub> + (I−4)/(20−4)·(P<sub>FS</sub>)</li>
+                        <li><b>ความไม่แน่นอนรวม</b>: U = 2·√Σuᵢ² (k=2)</li>
+                    </ol>
+                </div>
+                <div class="blk">
+                    <div class="label">องค์ประกอบความไม่แน่นอน (ตัวอย่าง)</div>
+                    <ul>
+                        <li>u<sub>std</sub> = Accuracy/√3</li>
+                        <li>u<sub>res,std</sub> = Resolution/(2√3)</li>
+                        <li>u<sub>ρ,h</sub>, u<sub>g,h</sub>, u<sub>h</sub> — ผลของความหนาแน่น, g, และความสูง</li>
+                        <li>u<sub>DMM</sub>, u<sub>res,uuc</sub>, u<sub>zero</sub>, u<sub>hys</sub>, u<sub>repeat</sub></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="sep"/>
+            <div class="blk">
+                <div class="label">ขั้นตอนใช้งาน</div>
+                <ol>
+                    <li>Setup: กรอกช่วงวัด + เลือก Accuracy → ระบบสร้างจุดสอบเทียบอัตโนมัติ</li>
+                    <li>Entry: ใส่ STD/UUC ตาม Cycle → ตารางคำนวณ Avg/Deviation/Hysteresis อัตโนมัติ</li>
+                    <li>Uncertainty: กด Auto-fill หรือใส่ค่า uᵢ → ระบบคำนวณ U และ Pass/Fail</li>
+                    <li>Report/Charts: ตรวจตารางสรุป, กราฟ 4 แบบ, และข้อเสนออัตโนมัติ (AI-like)</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <footer class="container small">© 2025 Pressure Calibration — DKD-R 6-1</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="master-data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
