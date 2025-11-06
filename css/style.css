@@ -302,3 +302,5 @@ datalist option{ font-size:14px; }
 /* ---------- Search bar row widths ---------- */
 .search-row .input{ min-width:220px; }
 .search-row select{ min-width:180px; }
+
+#btnGithub{ display:none !important; }
