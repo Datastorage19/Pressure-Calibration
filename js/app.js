@@ -528,7 +528,8 @@ $("btnMakePDF").addEventListener("click",async()=>{
 });
 // ===== Export CSV (FIXED) =====
 $("btnCSV").addEventListener("click", () => {
-  const head = ","UUC","Dev[bar](2-1)","U[bar]","Result"];
+  // หัวตาราง CSV (ใส่เป็น array ของ string แล้วค่อย join)
+  const head = ", "UUC", "Dev[bar](2-1)", "U[bar]", "Result"];
   const lines = [head.join(",")];
 
   const i = currentJob.instrument, unit = i.unit || "bar";
@@ -542,12 +543,14 @@ $("btnCSV").addEventListener("click", () => {
     let uuc_mA = null, calcP_bar = null;
 
     if (isTX) {
+      // UUC เป็น mA และคำนวณความดันจาก 4–20 mA
       uuc_mA = r.uuc ?? null;
       if (uuc_mA != null) {
         calcP_bar = pminBar + ((uuc_mA - 4) / 16) * (pmaxBar - pminBar);
         calcP_bar = +calcP_bar.toFixed(6);
       }
     } else {
+      // UUC เป็นค่าความดันโดยตรง (เช่น เกจ)
       if (r.uuc != null) calcP_bar = +(+r.uuc).toFixed(6);
     }
 
@@ -556,15 +559,22 @@ $("btnCSV").addEventListener("click", () => {
       : (r.deviation != null ? +(+r.deviation).toFixed(6) : null);
 
     const out = [
-      stdBar != null ? fmt(stdBar) : "-",
-      isTX ? (uuc_mA != null ? fmt(uuc_mA) : "-") : "-",
-      calcP_bar != null ? fmt(calcP_bar) : "-",
-      dev2 != null ? fmt(dev2) : "-",
-      r.U != null ? fmt(r.U) : "-",
-      r.pass ? "PASS" : "FAIL"
+      stdBar != null ? fmt(stdBar) : "-",                  // Standard
+      isTX ? (uuc_mA != null ? fmt(uuc_mA) : "-") : "-",   // UUC[mA] (สำหรับ Transmitter เท่านั้น)
+      calcP_bar != null ? fmt(calcP_bar) : "-",            // CalcP
+      dev2 != null ? fmt(dev2) : "-",                      // Dev[bar](2-1)
+      r.U != null ? fmt(r.U) : "-",                        // U[bar]
+      r.pass ? "PASS" : "FAIL"                             // Result
     ];
     lines.push(out.join(","));
   });
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Calibration_${currentJob.instrument.serial || "data"}.csv`;
+  a.click();
+});
 
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
