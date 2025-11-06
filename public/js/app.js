@@ -1,3 +1,7 @@
+// แทนที่บรรทัดหัวตารางเดิมใน btnCSV ด้วย:
+const head = ","UUC","Dev[bar](2-1)","U[bar]","Result"];
+const lines = [head.join(",")];
+
 /* ===== Utilities & State ===== */
 const pages=["dashboard","setup","entry","uncert","report","charts","help"];
 const toBar={"bar":v=>v,"kPa":v=>v/100,"Pa":v=>v/100000,"psi":v=>v*0.0689476,"mmHg":v=>v*0.00133322};
