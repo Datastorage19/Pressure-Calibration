@@ -1,550 +1,498 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pressure Calibration — DKD-R 6-1</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<style>
-:root{
-  --brand:#1b8f3a; --ink:#0f172a; --muted:#64748b; --bg:#f5f7f5; --card:#ffffff; --line:#dbe7d9;
-  --pass:#16a34a; --fail:#dc2626; --warn:#f59e0b; --page:1200px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Sarabun",system-ui,Segoe UI,Tahoma,sans-serif;font-size:16px;line-height:1.5}
-.container{max-width:var(--page);margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
-.grid{display:grid;gap:12px}
-.grid-2{grid-template-columns:1fr 1fr}
-.grid-3{grid-template-columns:repeat(3,1fr)}
-.grid-4{grid-template-columns:repeat(4,1fr)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.row.nowrap{flex-wrap:nowrap;overflow-x:auto}
-.row.nowrap>*{flex:0 0 auto}
-.row .input{min-width:0}
+  <meta charset="UTF-8" />
+  <title>Pressure Calibration (All-in-one)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-/* Topbar + Tabs: single line, equal width, no wrap */
-.topbar{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;padding:12px 16px;border-bottom:3px solid #0f4f25}
-.top-title{font-weight:700}
-.tabs{
-  display:grid;
-  grid-template-columns:repeat(7, minmax(0,1fr));
-  gap:8px; margin-top:10px;
-  white-space:nowrap;     /* no wrap */
-  overflow-x:auto;        /* scroll if needed */
-  scrollbar-width:thin;
-}
-.tab{appearance:none;border:0;background:#eaf5ed;color:#0b3819;padding:10px 12px;border-radius:999px;font-weight:700;cursor:pointer;text-align:center;white-space:nowrap}
-.tab.active{background:#0b3819;color:#fff}
-.tab:focus{outline:2px solid #0b3819}
+  <!-- ====== Libs (CDN) ====== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-/* Inputs */
-label{font-weight:700}
-.input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-family:inherit}
-.helper{font-size:.9rem;color:var(--muted)}
-.btn{background:var(--brand);color:#fff;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
-.btn.dark{background:#0f172a}
-.btn.warn{background:var(--warn)}
-.btn.fail{background:var(--fail)}
-.small{font-size:.9rem;color:var(--muted)}
-.sep{border:0;border-top:1px dashed var(--line);margin:14px 0}
+  <!-- ====== Styles ====== -->
+  <style>
+    :root{
+      --brand:#197a49; --ink:#223; --bg:#f4f7f6; --card:#fff; --muted:#6b7; --border:#dfeee6;
+      --fail:#e0565b; --pass:#1e9b63; --warn:#e6a23c;
+      --page-w:1100px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,-apple-system,sans-serif}
+    .container{max-width:var(--page-w);margin:0 auto;padding:16px}
 
-/* Dashboard KPI equal cards */
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:98px}
-.kpi .n{font-size:1.8rem;font-weight:800}
+    /* Top nav (one line, no wrap) */
+    #nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:9}
+    .nav-inner{display:flex;gap:8px;overflow:auto white-space:nowrap;padding:10px 12px}
+    .tab{flex:0 0 auto;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}
+    .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .hidden{display:none!important}
 
-/* Table */
-.table{width:100%;border-collapse:collapse;font-size:.95rem}
-.table th,.table td{border-bottom:1px solid #e7efe5;padding:8px 10px;text-align:left;vertical-align:top}
-.table th{background:#f2f7f3}
+    /* Layout */
+    .row{display:flex;gap:10px;align-items:center}
+    .grid{display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .kpi .box{background:#fff;border:1px dashed var(--border);border-radius:12px;padding:12px;text-align:center}
+    .kpi .box b{font-size:20px;display:block;margin-top:4px}
 
-/* Badges */
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.85rem;font-weight:800}
-.badge.pass{background:#e8f7ee;color:var(--pass);border:1px solid #bfeacc}
-.badge.fail{background:#fee2e2;color:var(--fail);border:1px solid #fecaca}
+    /* Form */
+    label{font-size:12px;color:#456}
+    .input, select, textarea{
+      width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff
+    }
+    .btn{padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:10px;cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .btn.warn{background:#fff7ea;border-color:#f5d49a}
+    .btn.fail{background:#ffe7e8;border-color:#ffc2c5}
+    .btn.ghost{background:transparent}
 
-/* Report blocks */
-.blk{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
-.label{color:#0b3819;font-weight:700;border-bottom:1px solid #e7efe5;padding-bottom:6px;margin-bottom:6px}
-.report-head{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-.report-grid{display:grid;gap:12px}
-.report-3{grid-template-columns:1fr 1fr 1fr}
-.report-2{grid-template-columns:1fr 1fr}
+    /* Table */
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--border);padding:8px 10px;font-size:13px;text-align:left}
+    thead th{position:sticky;top:0;background:#fafafa;z-index:1}
 
-/* Env fields equal & level */
-.env-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  align-items:end; /* level */
-}
-.env-grid label{min-height:22px;display:block}
-.env-grid .input{height:44px;line-height:44px}
+    /* Badges */
+    .badge{padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #0000}
+    .badge.pass{background:#e7f7ef;color:#177a4c;border-color:#cfeedd}
+    .badge.fail{background:#ffeced;color:#b93e44;border-color:#ffcfd2}
 
-/* Tags */
-.tag-sheet{margin-top:10px}
-.tag-list{display:flex;gap:16px;flex-wrap:wrap}
-.tag{width:300px;border:2px dashed #0f172a;border-radius:12px;padding:12px}
-.tag .h{font-weight:800}
-.tag .l{font-size:.9rem}
+    /* Tag area */
+    #tagArea{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--border);padding:12px}
+    .tagWrap{display:flex;gap:10px;flex-wrap:wrap}
+    .tag{border:1px solid var(--border);border-radius:12px;padding:10px;width:260px}
+    .tag .h{font-weight:700}
+    .tag .l{font-size:12px;color:#466;margin-top:3px}
 
-/* Signatures — keep bottom space for real signatures */
-.sig-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:80px}
-.sig-box{border-top:1px solid #111;padding-top:8px;text-align:center;min-height:90px}
-
-/* Print only tags */
-@media print{
-  body *{visibility:hidden}
-  .tag-sheet, .tag-sheet *{visibility:visible}
-  .tag-sheet{position:absolute;left:0;top:0;width:100%}
-}
-
-/* Visibility */
-.hidden{display:none !important}
-</style>
+    /* Two columns form */
+    .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="container">
-      <div class="top-title">Pressure Calibration — DKD-R 6-1</div>
-      <div class="tabs" id="nav">
-        <button class="tab active" data-page="dashboard">1) Dashboard</button>
-        <button class="tab" data-page="setup">2) Calibration Setup</button>
-        <button class="tab" data-page="entry">3) Measurement Entry</button>
-        <button class="tab" data-page="uncert">4) Uncertainty</button>
-        <button class="tab" data-page="report">5) Report</button>
-        <button class="tab" data-page="charts">6) Charts</button>
-        <button class="tab" data-page="help">7) Guide</button>
-      </div>
+
+  <!-- ====== NAV ====== -->
+  <div id="nav">
+    <div class="nav-inner" >
+      <div class="tab active" data-page="dashboard">Dashboard</div>
+      <div class="tab" data-page="setup">Setup</div>
+      <div class="tab" data-page="entry">Entry</div>
+      <div class="tab" data-page="uncert">Uncertainty</div>
+      <div class="tab" data-page="report">Report</div>
+      <div class="tab" data-page="charts">Charts</div>
+      <div class="tab" data-page="help">Help</div>
     </div>
   </div>
 
-  <!-- 1) Dashboard -->
-  <div class="container" id="page-dashboard">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div class="row" style="flex:1">
-          <input id="searchText" class="input" placeholder="ค้นหา: Model / Serial / เครื่องมือ" />
-          <input id="filterDateFrom" type="date" class="input"/>
-          <input id="filterDateTo" type="date" class="input"/>
-          <select id="filterStatus" class="input">
-            <option value="">ทุกสถานะ</option><option>In Progress</option><option>Completed</option><option>Pass</option><option>Fail</option>
-          </select>
-          <button class="btn" id="btnSearch">ค้นหา/กรอง</button>
-        </div>
-        <div class="row nowrap">
-          <select id="factorySelect" class="input">
-            <option value="">เลือกโรงงาน/ลูกค้า</option>
-            <option>บริษัท อธิมาตร จำกัด</option>
-            <option>บริษัท สุราบางยี่ขัน จำกัด</option>
-          </select>
-          <button class="btn" id="btnNew">+ สร้างงานใหม่</button>
-          <button class="btn ghost" id="btnPrintTag">ออก Tag อุปกรณ์</button>
-        </div>
-      </div>
+  <div class="container">
 
-      <hr class="sep"/>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="label">จำนวนงานทั้งหมด</div><div class="n" id="kpi-total">0</div></div>
-        <div class="kpi"><div class="label">กำลังดำเนินการ</div><div class="n" id="kpi-progress">0</div></div>
-        <div class="kpi"><div class="label">เสร็จสิ้น</div><div class="n" id="kpi-completed">0</div></div>
-        <div class="kpi"><div class="label">ผ่าน</div><div class="n" id="kpi-pass">0</div></div>
-        <div class="kpi"><div class="label">ไม่ผ่าน</div><div class="n" id="kpi-fail">0</div></div>
-      </div>
-
-      <hr class="sep"/>
-      <table class="table">
-        <thead>
-          <tr>
-            <th style="width:30px"><input type="checkbox" id="chkAll"></th>
-            <th>Factory</th><th>Instrument</th><th>Serial</th><th>Range</th><th>Status</th><th>Date</th><th>ผล</th><th>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody id="jobsBody"></tbody>
-      </table>
-    </div>
-
-    <!-- Tags (print only tags) -->
-    <div class="card hidden tag-sheet" id="tagArea">
-      <div class="row" style="justify-content:space-between">
-        <div><strong>Tag *แปะอุปกรณ์</strong> — เลือกงานในตารางแล้วกด “ออก Tag อุปกรณ์”</div>
-        <div class="row"><button class="btn dark" onclick="window.print()">พิมพ์เฉพาะ Tag</button>
-          <button class="btn ghost" id="btnCloseTag">ซ่อน</button></div>
-      </div>
-      <hr class="sep"/>
-      <div class="tag-list" id="tagList"></div>
-    </div>
-  </div>
-
-  <!-- 2) Setup -->
-  <div class="container hidden" id="page-setup">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div><strong>Calibration Setup</strong></div>
-        <button class="btn" id="btnSaveSetup">บันทึก/ถัดไป</button>
-      </div>
-      <hr class="sep"/>
-
-      <!-- Customer & Department & Certificate -->
-      <div class="grid grid-2">
-        <div class="blk">
-          <div class="label">Customer Information</div>
-          <label>Company</label>
-          <input id="custCompany" class="input" list="companyList" placeholder="ชื่อลูกค้า/โรงงาน"/>
-          <datalist id="companyList"></datalist>
-
-          <label>Address</label>
-          <textarea id="custAddr" class="input" rows="2" list="addressList" placeholder="ที่อยู่ลูกค้า"></textarea>
-          <datalist id="addressList"></datalist>
-        </div>
-
-        <div class="blk">
-          <div class="label">Department (เดิม: Place of calibration)</div>
-          <label>Department / Company</label>
-          <input id="placeDept" class="input" list="companyList" placeholder="หน่วยงาน/แผนกที่ทำการสอบเทียบ"/>
-          <label>Address</label>
-          <textarea id="placeAddr" class="input" rows="2" list="addressList" placeholder="ที่อยู่หน่วยงาน"></textarea>
-        </div>
-      </div>
-
-      <div class="grid grid-3" style="margin-top:12px">
-        <div class="blk">
-          <div class="label">Certificate</div>
-          <label>No.</label><input id="certNo" class="input" placeholder="เลขที่ใบรับรอง"/>
-          <label>Received</label><input id="certReceived" class="input" type="date"/>
-          <label>Issue Date</label><input id="certIssue" class="input" type="date"/>
-        </div>
-
-        <div class="blk">
-          <div class="label">Instrument (UUC)</div>
-          <label>Instrument Type *</label>
-          <select id="insType" class="input">
-            <option value="">เลือก</option><option>Bourdon Tube Gauge</option><option>Electric Pressure Gauge</option><option>Pressure Transmitter</option>
-          </select>
-          <label>Serial Number *</label><input id="serial" class="input" placeholder="PT-2025-001"/>
-          <label>Model *</label><input id="model" class="input" placeholder="3051C"/>
-          <label>Manufacturer</label><input id="mfg" class="input" placeholder="Rosemount"/>
-        </div>
-
-        <div class="blk">
-          <div class="label">Ranges & Environment</div>
-          <label>Measurement Range (min—max) *</label>
-          <div class="row">
-            <input id="rangeMin" class="input" type="number" placeholder="0" style="max-width:160px">
-            <span>—</span>
-            <input id="rangeMax" class="input" type="number" placeholder="10" style="max-width:160px">
-            <select id="unit" class="input" style="max-width:130px">
-              <option>bar</option><option>kPa</option><option>mmHg</option><option>psi</option><option>Pa</option>
+    <!-- ====== DASHBOARD ====== -->
+    <section id="page-dashboard" class="">
+      <div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:10px">
+        <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:10px">
+          <div>
+            <label>ค้นหา (Model/Serial)</label>
+            <input id="searchText" class="input" placeholder="เช่น 3051 / S/N 1234" />
+          </div>
+          <div>
+            <label>วันที่ (จาก)</label>
+            <input id="filterDateFrom" class="input" type="date" />
+          </div>
+          <div>
+            <label>วันที่ (ถึง)</label>
+            <input id="filterDateTo" class="input" type="date" />
+          </div>
+          <div>
+            <label>สถานะ</label>
+            <select id="filterStatus" class="input">
+              <option value="">ทั้งหมด</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+              <option>Pass</option>
+              <option>Fail</option>
             </select>
           </div>
-          <div class="helper">ตัวอย่าง: 0—10 bar</div>
-
-          <label>Medium *</label>
-          <select id="medium" class="input"><option>Air</option><option>Nitrogen</option><option>Oil</option><option>Water</option></select>
-          <label>Calibration Date *</label><input id="calDate" class="input" type="date"/>
-
-          <!-- Env equal level -->
-          <div class="env-grid" style="margin-top:8px">
-            <div><label>Temp (°C) *</label><input id="envTemp" class="input" type="number" placeholder="18-28"></div>
-            <div><label>Humidity (%RH)</label><input id="envHumid" class="input" type="number" placeholder="50"></div>
-            <div><label>Atm (mbar) *</label><input id="envAtm" class="input" type="number" placeholder="1013"></div>
-          </div>
+        </div>
+        <div class="row">
+          <button id="btnSearch" class="btn">ค้นหา</button>
+          <button id="btnNew" class="btn primary">สร้างงานใหม่</button>
         </div>
       </div>
 
-      <!-- Accuracy / Points -->
-      <hr class="sep"/>
-      <div class="grid grid-3">
-        <div>
-          <label>Accuracy Class *</label>
-          <select id="accClass" class="input">
-            <option value="">เลือก</option><option>&lt; 0.1%</option><option>0.1% - 0.6%</option><option>&gt; 0.6%</option>
-          </select>
-          <div class="helper">ระบบเลือก Sequence ให้อัตโนมัติ</div>
-        </div>
-        <div>
-          <label>Calibration Sequence (Auto)</label>
-          <input id="sequence" class="input" readonly placeholder="A/B/C by Accuracy Class"/>
-          <div class="helper">A: 2Up+2Down (9 pts) • B: 2Up+1Down (9 pts) • C: 1Up+1Down (5 pts)</div>
-        </div>
-        <div>
-          <label>Calibration Points (bar) *</label>
+      <div class="kpi" style="margin-bottom:8px">
+        <div class="box">ทั้งหมด<b id="kpi-total">0</b></div>
+        <div class="box">กำลังทำ<b id="kpi-progress">0</b></div>
+        <div class="box">เสร็จสิ้น<b id="kpi-completed">0</b></div>
+        <div class="box">ผ่าน<b id="kpi-pass">0</b></div>
+        <div class="box">ไม่ผ่าน<b id="kpi-fail">0</b></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
           <div class="row">
-            <button class="btn ghost" id="btnAutoPoints">สร้างจุดอัตโนมัติ</button>
-            <button class="btn ghost" id="btnClearPoints">ล้าง</button>
+            <label><input type="checkbox" id="chkAll"/> เลือกทั้งหมด</label>
+          </div>
+          <div class="row">
+            <button id="btnPrintTag" class="btn">สร้าง Tag + QR</button>
+            <button id="btnCSV" class="btn warn">Export CSV</button>
           </div>
         </div>
-      </div>
-      <div id="pointsBox" class="grid grid-4" style="margin-top:10px"></div>
-
-      <!-- Standards used -->
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">Standards used</div>
-        <div class="row">
-          <input id="stdIn_serial" class="input" placeholder="Serial No." style="max-width:160px">
-          <input id="stdIn_cert" class="input" placeholder="Certificate No." style="max-width:180px">
-          <input id="stdIn_calDate" class="input" type="date" style="max-width:160px">
-          <input id="stdIn_dueDate" class="input" type="date" style="max-width:160px">
-          <input id="stdIn_desc" class="input" placeholder="Description" style="flex:1">
-          <select id="stdIn_status" class="input" style="max-width:140px"><option>OK</option><option>DUE</option><option>EXPIRED</option></select>
-          <button class="btn" id="addStdRow">เพิ่ม</button>
+        <div style="max-height:360px;overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:36px"></th>
+                <th>Customer</th><th>Type</th><th>Serial</th><th>Range</th>
+                <th>Status</th><th>Cal Date</th><th>Verdict</th><th style="width:220px">Action</th>
+              </tr>
+            </thead>
+            <tbody id="jobsBody"></tbody>
+          </table>
         </div>
-        <table class="table" style="margin-top:8px">
-          <thead><tr><th>Serial</th><th>Certificate</th><th>Calibration date</th><th>Due date</th><th>Description</th><th>Status</th><th></th></tr></thead>
-          <tbody id="stdList"></tbody>
-        </table>
       </div>
 
-      <!-- Signatures -->
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">Signatures / Names</div>
-        <div class="sig-grid">
+      <!-- Tag results -->
+      <div id="tagArea" class="hidden">
+        <div class="row" style="justify-content:space-between;margin-top:10px">
+          <b>Tags ที่เลือก</b>
+          <button id="btnCloseTag" class="btn">ซ่อน</button>
+        </div>
+        <div class="tagWrap" id="tagList"></div>
+        <div class="row" style="margin-top:8px">
+          <button onclick="window.print()" class="btn primary">พิมพ์</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SETUP ====== -->
+    <section id="page-setup" class="hidden">
+      <div class="card">
+        <h3 style="margin-top:0">ข้อมูลลูกค้า & ใบรับรอง</h3>
+        <div class="cols-2">
           <div>
-            <label>Technician Name *</label><input id="sigTechName" class="input" placeholder="ผู้ปฏิบัติการสอบเทียบ">
-            <label>Technician Title</label><input id="sigTechTitle" class="input" placeholder="ตำแหน่ง">
-            <label>Technician Date</label><input id="sigTechDate" class="input" type="date">
+            <label>Company</label>
+            <input id="custCompany" class="input" list="companyList" placeholder="พิมพ์เพื่อค้นหา..." />
+            <datalist id="companyList"></datalist>
           </div>
           <div>
-            <label>Reviewer Name</label><input id="sigRevName" class="input" placeholder="ผู้ตรวจทาน">
-            <label>Reviewer Title</label><input id="sigRevTitle" class="input" placeholder="ตำแหน่ง">
-            <label>Reviewer Date</label><input id="sigRevDate" class="input" type="date">
+            <label>Address</label>
+            <input id="custAddr" class="input" list="addressList" placeholder="จะเติมอัตโนมัติเมื่อเลือก Company" />
+            <datalist id="addressList"></datalist>
           </div>
           <div>
-            <label>Approver Name</label><input id="sigAppName" class="input" placeholder="ผู้อนุมัติ">
-            <label>Approver Title</label><input id="sigAppTitle" class="input" placeholder="ตำแหน่ง">
-            <label>Approver Date</label><input id="sigAppDate" class="input" type="date">
+            <label>Department (Place of calibration)</label>
+            <input id="placeDept" class="input" list="deptList" placeholder="พิมพ์เพื่อค้นหา..." />
+            <datalist id="deptList"></datalist>
+          </div>
+          <div>
+            <label>Department Address</label>
+            <input id="placeAddr" class="input" placeholder="เช่น อาคาร/ห้อง/ชั้น/โซน" />
+          </div>
+        </div>
+
+        <div class="cols-3" style="margin-top:10px">
+          <div>
+            <label>Certificate No.</label>
+            <input id="certNo" class="input"/>
+          </div>
+          <div>
+            <label>Received Date</label>
+            <input id="certReceived" type="date" class="input"/>
+          </div>
+          <div>
+            <label>Issue Date</label>
+            <input id="certIssue" type="date" class="input"/>
           </div>
         </div>
       </div>
 
-      <!-- Limits -->
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">Acceptance / Plant Limit</div>
-        <div class="grid grid-3">
-          <div><label>MPE / Acceptance (bar)</label><input id="accLimitBar" class="input" type="number" placeholder="เว้นว่าง=0.1%FS"></div>
-          <div><label>Factory Limit (bar)</label><input id="plantLimitBar" class="input" type="number" placeholder="ลิมิตเฉพาะโรงงาน (ถ้ามี)"></div>
-          <div><label>แนะนำค่าแก้</label><select id="enableCorrection" class="input"><option>Yes</option><option>No</option></select></div>
+      <div class="card">
+        <h3 style="margin-top:0">Instrument</h3>
+        <div class="cols-3">
+          <div><label>Type</label><input id="insType" class="input" placeholder="Transmitter / Gauge / Indicator"></div>
+          <div><label>Model</label><input id="model" class="input"></div>
+          <div><label>Serial</label><input id="serial" class="input"></div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3) Entry -->
-  <div class="container hidden" id="page-entry">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div><strong>Measurement Data Entry — STD/UUC (คำนวณอัตโนมัติ)</strong></div>
-        <div class="row"><button class="btn ghost" id="btnSaveEntry">บันทึก</button></div>
-      </div>
-      <hr class="sep"/>
-      <div class="grid grid-3">
-        <div><label>Standard Name</label><input id="stdName" class="input" placeholder="Deadweight Tester"/></div>
-        <div><label>Standard Serial</label><input id="stdSerial" class="input" placeholder="DWT-001"/></div>
-        <div><label>Standard Accuracy (% หรือ ค่าสัมบูรณ์)</label><input id="stdAcc" class="input" type="number" placeholder="0.02"/></div>
-        <div><label>Standard Resolution (bar)</label><input id="stdRes" class="input" type="number" placeholder="0.001"/></div>
-        <div><label>Standard Certificate No.</label><input id="stdCert" class="input" placeholder="CAL-2025-001"/></div>
-      </div>
-      <hr class="sep"/>
-      <div id="entryTableWrap" class="card"></div>
-      <div class="small">อัปเดตค่าใดๆ ระบบจะคำนวณใหม่ทันที (Avg, Deviation, Hysteresis)</div>
-    </div>
-  </div>
-
-  <!-- 4) Uncertainty -->
-  <div class="container hidden" id="page-uncert">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div><strong>Uncertainty Calculation</strong></div>
-        <div class="row">
-          <button class="btn dark" id="btnAutoFromData">Auto-fill จากข้อมูล</button>
-          <button class="btn ghost" id="btnSaveUncert">บันทึก</button>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Manufacturer</label><input id="mfg" class="input"></div>
+          <div><label>Medium</label><input id="medium" class="input" placeholder="Air / Oil / ..."></div>
+          <div><label>Calibration Date</label><input id="calDate" type="date" class="input"></div>
         </div>
-      </div>
-      <hr class="sep"/>
-
-      <div class="grid grid-3">
-        <div><label>u_standard</label><input id="u_standard" class="input" type="number" placeholder="Accuracy_STD/√3"><div class="small">ตัวอย่าง: STD 0.02 bar → u_standard ≈ 0.02/√3</div></div>
-        <div><label>u_resolution_std</label><input id="u_res_std" class="input" type="number" placeholder="Resolution_STD/(2√3)"><div class="small">ตัวอย่าง: res 0.001 bar → 0.001/(2√3)</div></div>
-        <div><label>u_zero</label><input id="u_zero" class="input" type="number" placeholder="max(Zero Deviation)/√3"><div class="small">อิง dev ที่จุด 0 bar</div></div>
-        <div><label>u_repeatability</label><input id="u_repeat" class="input" type="number" placeholder="SD/√n"><div class="small">SD ของ deviation ทุกจุด / √n</div></div>
-        <div><label>u_hysteresis</label><input id="u_hyst" class="input" type="number" placeholder="Mean(Hysteresis)/√3"><div class="small">ค่าเฉลี่ยฮิสเทอรีซีส</div></div>
-        <div class="blk">U (k=2) = 2 × √( u_std² + u_res² + u_zero² + u_repeat² + u_hyst² )<div class="small">ระบบจะคำนวณผลรวมและสรุป Pass/Fail อัตโนมัติ</div></div>
-      </div>
-
-      <hr class="sep"/>
-      <div id="uncertSummary" class="small"></div>
-    </div>
-  </div>
-
-  <!-- 5) Report -->
-  <div class="container hidden" id="page-report">
-    <div class="card" id="reportCard">
-      <div class="report-head">
-        <div class="blk">
-          <div class="label">Instrument Calibration Office of Technical For Spirit Production</div>
-          <div class="small">260 Sangsom Building, Phaholyothin Road, Samsen-ai, Phayathai, Bangkok 10400 • Tel. 02-278-4321 # 5115</div>
-          <hr class="sep"/>
-          <div class="report-grid report-2">
-            <div><b>Customer</b><br>Company: <span id="rCustomer">—</span><br>Address: <span id="rCustAddr">—</span></div>
-            <div><b>Department</b><br>Company: <span id="rPlaceCompany">—</span><br>Address: <span id="rPlaceAddr">—</span></div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Range Min</label><input id="rangeMin" class="input" type="number" step="0.00001"></div>
+          <div><label>Range Max</label><input id="rangeMax" class="input" type="number" step="0.00001"></div>
+          <div><label>Unit</label>
+            <select id="unit" class="input">
+              <option>bar</option><option>kPa</option><option>Pa</option><option>psi</option><option>mmHg</option>
+            </select>
           </div>
         </div>
-        <div class="blk">
-          <div class="label">Certificate</div>
-          <div>No.: <span id="rCertNo">—</span></div>
-          <div>Received: <span id="rReceived">—</span></div>
-          <div>Calibration: <span id="rCalDate">—</span></div>
-          <div>Issue Date: <span id="rIssueDate">—</span></div>
+
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Ambient Temp (°C)</label><input id="envTemp" class="input" type="number"></div>
+          <div><label>Humidity (%RH)</label><input id="envHumid" class="input" type="number"></div>
+          <div><label>Atm (mbar)</label><input id="envAtm" class="input" type="number"></div>
         </div>
       </div>
 
-      <hr class="sep"/>
-
-      <div class="report-grid report-3">
-        <div class="blk">
-          <div class="label">Instrument (UUC)</div>
-          <div>Type: <span id="rType">—</span></div>
-          <div>Model/Code: <span id="rModel">—</span></div>
-          <div>Serial No.: <span id="rSerial">—</span></div>
-          <div>Manufacturer: <span id="rMfg">—</span></div>
+      <div class="card">
+        <h3 style="margin-top:0">Accuracy & Points</h3>
+        <div class="cols-3">
+          <div>
+            <label>Accuracy Class</label>
+            <select id="accClass" class="input">
+              <option value="">เลือก…</option>
+              <option>&lt; 0.1%</option>
+              <option>0.1% - 0.6%</option>
+              <option>&gt; 0.6%</option>
+            </select>
+          </div>
+          <div>
+            <label>Sequence (Auto)</label>
+            <input id="sequence" class="input" readonly placeholder="Auto by Accuracy Class">
+          </div>
+          <div class="row" style="align-items:flex-end">
+            <button id="btnAutoPoints" class="btn">สร้างจุดอัตโนมัติ</button>
+            <button id="btnClearPoints" class="btn warn">ล้างจุด</button>
+          </div>
         </div>
-        <div class="blk">
-          <div class="label">Ranges & Specs</div>
-          <div>Measuring range: <span id="rMeasureRange">—</span></div>
-          <div>Calibration range: <span id="rCalRange">—</span></div>
-          <div>Resolution: <span id="rResolution">—</span></div>
-          <div>MPE/Acceptance: <span id="rMPE">—</span></div>
-          <div>Factory Limit: <span id="rPlantLimit">—</span></div>
+        <div id="pointsBox" class="grid" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Standards Used (optional)</h3>
+        <div class="cols-3">
+          <div><label>Serial</label><input id="stdIn_serial" class="input"></div>
+          <div><label>Cert No.</label><input id="stdIn_cert" class="input"></div>
+          <div><label>Desc</label><input id="stdIn_desc" class="input"></div>
         </div>
-        <div class="blk">
-          <div class="label">Result Status</div>
-          <div>Result of Calibration: <span id="rVerdict"><span class="badge">—</span></span></div>
-          <div>U (k=2): <span id="rU">—</span></div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Cal Date</label><input id="stdIn_calDate" type="date" class="input"></div>
+          <div><label>Due Date</label><input id="stdIn_dueDate" type="date" class="input"></div>
+          <div>
+            <label>Status</label>
+            <select id="stdIn_status" class="input">
+              <option>OK</option><option>Warning</option><option>Expired</option>
+            </select>
+          </div>
         </div>
-      </div>
-
-      <hr class="sep"/>
-
-      <div class="blk">
-        <div class="label">Standards used</div>
-        <table class="table" id="stdTable">
-          <thead><tr><th>Serial No.</th><th>Certificate No.</th><th>Calibration date</th><th>Due date</th><th>Description</th><th>Status</th></tr></thead>
-        <tbody id="stdBody"></tbody></table>
-      </div>
-
-      <hr class="sep"/>
-
-      <div class="blk">
-        <div class="label">Environment Conditions</div>
-        <div>T: <span id="rAmbT">—</span> °C, RH: <span id="rAmbH">—</span> %RH, Atm: <span id="rAmbP">—</span> mbar</div>
-      </div>
-
-      <hr class="sep"/>
-
-      <div class="blk">
-        <div class="label">Measurement Result (key columns)</div>
-        <div id="resultTableWrap"></div>
-        <div class="small">หัวตาราง: Standard Reading [bar] (1) • UUC* Reading [mA] • Calculation Pressure [bar] (2) • Measurement Deviation [bar] (2)-(1) • Uncertainty [bar] • Result [Pass/Fail]</div>
-      </div>
-
-      <hr class="sep"/>
-
-      <div class="blk">
-        <div class="label">Analysis (AI-like)</div>
-        <div id="aiNote" class="small"></div>
-      </div>
-
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">Signatures</div>
-        <div class="sig-grid">
-          <div><div class="sig-box"><div id="sigTechNameOut">—</div><div class="small" id="sigTechTitleOut">—</div><div class="small" id="sigTechDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Technician</div></div>
-          <div><div class="sig-box"><div id="sigRevNameOut">—</div><div class="small" id="sigRevTitleOut">—</div><div class="small" id="sigRevDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Reviewer</div></div>
-          <div><div class="sig-box"><div id="sigAppNameOut">—</div><div class="small" id="sigAppTitleOut">—</div><div class="small" id="sigAppDateOut">—</div></div><div class="small" style="text-align:center;margin-top:4px">Approver</div></div>
+        <div class="row" style="margin-top:8px"><button id="addStdRow" class="btn">เพิ่ม</button></div>
+        <div style="max-height:220px;overflow:auto;margin-top:10px">
+          <table class="table">
+            <thead><tr><th>Serial</th><th>Cert</th><th>Cal</th><th>Due</th><th>Desc</th><th>Status</th><th></th></tr></thead>
+            <tbody id="stdList"></tbody>
+          </table>
         </div>
       </div>
 
-      <hr class="sep"/>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" id="btnMakePDF">Export PDF</button>
-        <button class="btn ghost" id="btnCSV">Export CSV</button>
+      <div class="card">
+        <h3 style="margin-top:0">Signatures & Limits</h3>
+        <div class="cols-3">
+          <div><label>Technician Name</label><input id="sigTechName" class="input"></div>
+          <div><label>Title</label><input id="sigTechTitle" class="input"></div>
+          <div><label>Date</label><input id="sigTechDate" type="date" class="input"></div>
+        </div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Reviewer Name</label><input id="sigRevName" class="input"></div>
+          <div><label>Title</label><input id="sigRevTitle" class="input"></div>
+          <div><label>Date</label><input id="sigRevDate" type="date" class="input"></div>
+        </div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Approver Name</label><input id="sigAppName" class="input"></div>
+          <div><label>Title</label><input id="sigAppTitle" class="input"></div>
+          <div><label>Date</label><input id="sigAppDate" type="date" class="input"></div>
+        </div>
+
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Acceptance Limit (bar)</label><input id="accLimitBar" type="number" class="input"></div>
+          <div><label>Plant Limit (bar)</label><input id="plantLimitBar" type="number" class="input"></div>
+          <div>
+            <label>Enable Correction</label>
+            <select id="enableCorrection" class="input"><option>Yes</option><option>No</option></select>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <div class="row" style="justify-content:flex-end;margin:12px 0">
+        <button id="btnSaveSetup" class="btn primary">บันทึก & ไปหน้า Entry</button>
+      </div>
+    </section>
+
+    <!-- ====== ENTRY ====== -->
+    <section id="page-entry" class="hidden">
+      <div class="card">
+        <h3 style="margin-top:0">Standard Meta</h3>
+        <div class="cols-3">
+          <div><label>Name</label><input id="stdName" class="input"></div>
+          <div><label>Serial</label><input id="stdSerial" class="input"></div>
+          <div><label>Cert No.</label><input id="stdCert" class="input"></div>
+        </div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>Std Accuracy (bar)</label><input id="stdAcc" type="number" class="input"></div>
+          <div><label>Resolution (bar)</label><input id="stdRes" type="number" class="input"></div>
+          <div style="display:flex;align-items:flex-end"><button id="btnSaveEntry" class="btn primary">บันทึก & ไปหน้า Uncertainty</button></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Measurement Table</h3>
+        <div id="entryTableWrap"></div>
+      </div>
+    </section>
+
+    <!-- ====== UNCERTAINTY ====== -->
+    <section id="page-uncert" class="hidden">
+      <div class="card">
+        <h3 style="margin-top:0">คำนวณความไม่แน่นอน</h3>
+        <div class="cols-3">
+          <div><label>u_standard</label><input id="u_standard" class="input" type="number" step="0.000001"></div>
+          <div><label>u_res(std)</label><input id="u_res_std" class="input" type="number" step="0.000001"></div>
+          <div><label>u_zero</label><input id="u_zero" class="input" type="number" step="0.000001"></div>
+        </div>
+        <div class="cols-3" style="margin-top:10px">
+          <div><label>u_repeat</label><input id="u_repeat" class="input" type="number" step="0.000001"></div>
+          <div><label>u_hyst</label><input id="u_hyst" class="input" type="number" step="0.000001"></div>
+          <div class="row" style="align-items:flex-end">
+            <button id="btnAutoFromData" class="btn">Auto from data</button>
+            <button id="btnSaveUncert" class="btn primary">บันทึก & ไปหน้า Report</button>
+          </div>
+        </div>
+        <div id="uncertSummary" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ====== REPORT ====== -->
+    <section id="page-report" class="hidden">
+      <div class="row" style="justify-content:flex-end;margin-bottom:8px">
+        <button id="btnMakePDF" class="btn">บันทึกเป็น PDF</button>
+      </div>
+      <div id="reportCard" class="card">
+        <h2 style="margin:0 0 6px 0">Calibration Report</h2>
+        <div class="cols-2">
+          <div class="card" style="padding:10px">
+            <b>Customer</b>
+            <div id="rCustomer">—</div>
+            <div id="rCustAddr" style="font-size:12px;color:#567">—</div>
+            <div style="margin-top:6px"><b>Department</b> <span id="rPlaceCompany">—</span></div>
+            <div id="rPlaceAddr" style="font-size:12px;color:#567">—</div>
+          </div>
+          <div class="card" style="padding:10px">
+            <div>Cert: <b id="rCertNo">—</b> | Received: <span id="rReceived">—</span> | Issue: <span id="rIssueDate">—</span></div>
+            <div>Date: <span id="rCalDate">—</span></div>
+            <div>Verdict: <span id="rVerdict">—</span></div>
+            <div>U(k=2): <b id="rU">—</b></div>
+            <div>MPE: <span id="rMPE">—</span> | Plant: <span id="rPlantLimit">—</span></div>
+          </div>
+        </div>
+
+        <div class="cols-2" style="margin-top:8px">
+          <div class="card" style="padding:10px">
+            <b>Instrument</b>
+            <div>Type: <span id="rType">—</span> | Model: <span id="rModel">—</span> | S/N: <span id="rSerial">—</span></div>
+            <div>Mfg: <span id="rMfg">—</span></div>
+            <div>Range: <span id="rMeasureRange">—</span></div>
+            <div>Cal Range: <span id="rCalRange">—</span></div>
+            <div>Resolution: <span id="rResolution">—</span></div>
+          </div>
+          <div class="card" style="padding:10px">
+            <b>Environment</b>
+            <div>T: <span id="rAmbT">—</span> °C | H: <span id="rAmbH">—</span> %RH | P: <span id="rAmbP">—</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:10px">
+          <b>Standards Used</b>
+          <div style="max-height:220px;overflow:auto;margin-top:6px">
+            <table class="table">
+              <thead><tr><th>Serial</th><th>Cert</th><th>Cal</th><th>Due</th><th>Desc</th><th>Status</th></tr></thead>
+              <tbody id="stdBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:10px" id="resultTableWrap"></div>
+
+        <div class="card" style="margin-top:10px">
+          <b>Signatures</b>
+          <div class="cols-3" style="margin-top:6px">
+            <div>
+              <div><b id="sigTechNameOut">—</b></div>
+              <div id="sigTechTitleOut" style="font-size:12px;color:#567">—</div>
+              <div id="sigTechDateOut" style="height:60px;border-bottom:1px dashed #ccc;margin-top:16px"></div>
+            </div>
+            <div>
+              <div><b id="sigRevNameOut">—</b></div>
+              <div id="sigRevTitleOut" style="font-size:12px;color:#567">—</div>
+              <div id="sigRevDateOut" style="height:60px;border-bottom:1px dashed #ccc;margin-top:16px"></div>
+            </div>
+            <div>
+              <div><b id="sigAppNameOut">—</b></div>
+              <div id="sigAppTitleOut" style="font-size:12px;color:#567">—</div>
+              <div id="sigAppDateOut" style="height:60px;border-bottom:1px dashed #ccc;margin-top:16px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="aiNote" class="card" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ====== CHARTS ====== -->
+    <section id="page-charts" class="hidden">
+      <div class="card">
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <canvas id="chartAccuracy" height="160"></canvas>
+          <canvas id="chartError" height="160"></canvas>
+          <canvas id="chartErrPlusU" height="160"></canvas>
+          <canvas id="chartErrMinusU" height="160"></canvas>
+        </div>
+        <div id="aiCharts" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ====== HELP ====== -->
+    <section id="page-help" class="hidden">
+      <div class="card">
+        <h3>Help</h3>
+        <p>แบบทดสอบระบบสอบเทียบความดัน: กรอก Setup → Entry → Uncertainty → Report/Charts</p>
+      </div>
+    </section>
   </div>
 
-  <!-- 6) Charts -->
-  <div class="container hidden" id="page-charts">
-    <div class="card">
-      <div class="row" style="justify-content:space-between"><div><strong>Charts</strong> — Accuracy/Errors/Uncertainty</div></div>
-      <hr class="sep"/>
-      <div class="grid grid-2">
-        <div class="blk"><canvas id="chartAccuracy"></canvas></div>
-        <div class="blk"><canvas id="chartError"></canvas></div>
-      </div>
-      <div class="grid grid-2" style="margin-top:12px">
-        <div class="blk"><canvas id="chartErrPlusU"></canvas></div>
-        <div class="blk"><canvas id="chartErrMinusU"></canvas></div>
-      </div>
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">AI Chart Insights</div>
-        <div id="aiCharts" class="small"></div>
-      </div>
-    </div>
-  </div>
+  <!-- ====== Masters (inline) ====== -->
+  <script>
+    window.MASTERS = {
+      companies: [
+        { c:"Athimart Co.,Ltd.", a:"170 Moo.11, Tambon Nikhom, Amphoe Satuek" },
+        { c:"Sura Bangyikhan Co.,Ltd.", a:"82 Moo.3, Tsmbon Bang Khoo Wat, Amphoe Muang" },
+        { c:"Fuengfuanant Co.,Ltd.", a:"333 Moo.1, Tambon Tha Toom, Amphoe Si Maha Phot" },
+        { c:"Fermentation Central Officer", a:"260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai" },
+        { c:"Luckchai Liquor Trading Co.,Ltd.", a:"46 Moo.1, Tambon Nong Klang Na, Amphoe Muang" },
+        { c:"Kanchanasingkorn Co.,Ltd.", a:"50 Moo.7, Tambon Wangkhanai, Amphoe Thamuang" },
+        { c:"Kankwan Co.,Ltd.", a:"309 Moo.6, Nampong-Kranuan Road, Tambon Nampong, Amphoe Nampong" },
+        { c:"Red Bull Distillery(1988) Co.,Ltd.", a:"8 Moo.5, Setthakit 1 Road, Tambon Nadee, Amphoe Muang" },
+        { c:"Instrument Calibration Laboratory", a:"260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai" },
+        { c:"Mongkolsamai Co.,Ltd.", a:"149 Moo.5, Wangseesoob Ngew-Ngam Road, Tambon Phajud, Amphoe Muang" },
+        { c:"Nateechai Co.,Ltd.", a:"1 Moo.2, Highway No.41 Road, Tambon Tharongchang, Amphoe Punpin" },
+        { c:"United Products Co.,Ltd.", a:"56 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri" },
+        { c:"Sura Piset Pattharalanna Co.,Ltd.", a:"14 Sangsom Building,Soi Yasoob 1,Vibhavadi Rangsit Road, Chomphon Sub-district,Chatuchack District" },
+        { c:"Sangsom Co.,Ltd.", a:"49 Moo.4, Tambon Hormkret, Amphoe Sampran" },
+        { c:"Sangsom Co.,Ltd.", a:"37/3 Moo.7, Tambon Wangkhanai, Amphoe Thamuang" },
+        { c:"S.S. Karnsura Co.,Ltd.", a:"101 Moo.8, Tambon Kaeng Dom, King Amphoe Sawang Wirawong" },
+        { c:"Simathurakij Co.,Ltd.", a:"1 Moo.6 Tambon Ban Daen, Amphoe Banphot Phisai" },
+        { c:"SPM Foods and Beverages Co.,Ltd.", a:"79 Moo.3, Tambon Lumlookbua, Amphoe Dontoom" },
+        { c:"Thanapakdi Co.,Ltd.", a:"315 Moo.4, Tambon Mae Faek, Amphoe San Sai" },
+        { c:"Sura Piset Thipharat Co.,Ltd.", a:"488 Moo.1, Tambon Wangdong, Amphoe Muang" },
+        { c:"Theparunothai Co.,Ltd.", a:"99 Moo.4, Tambon Hat Kham, Amphoe Muang" },
+        { c:"United Winery and Distillery Co.,Ltd.", a:"54 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri" },
+      ],
+      departments: ["แผนกกลั่นสุรา","แผนกหมักส่า","อื่นๆ โปรดระบุ"]
+    };
+  </script>
 
-  <!-- 7) Guide -->
-  <div class="container hidden" id="page-help">
-    <div class="card">
-      <h3>Formula & Guide (ละเอียด)</h3>
-      <div class="grid grid-2">
-        <div class="blk">
-          <div class="label">สูตรหลักสำหรับการสอบเทียบ</div>
-          <ol>
-            <li><b>แก้ความดันตามระดับความสูง</b>: ΔP = (ρ<sub>f</sub> − ρ<sub>a</sub>)·g·Δh</li>
-            <li><b>Zero correction</b>:
-              N₁,ⱼ = U₁,ⱼ; N₂,ⱼ = (S₁,ⱼ − S₂,ⱼ)+U₂,ⱼ;
-              M₁,ⱼ = N₁,ⱼ − N₁,₀; M₂,ⱼ = N₂,ⱼ − N₁,₀
-            </li>
-            <li><b>แปลงสัญญาณเป็นความดัน</b> (4–20mA): P = P<sub>min</sub> + (I−4)/(20−4)·(P<sub>FS</sub>)</li>
-            <li><b>ความไม่แน่นอนรวม</b>: U = 2·√Σuᵢ² (k=2)</li>
-          </ol>
-        </div>
-        <div class="blk">
-          <div class="label">องค์ประกอบความไม่แน่นอน (ตัวอย่าง)</div>
-          <ul>
-            <li>u<sub>std</sub> = Accuracy/√3</li>
-            <li>u<sub>res,std</sub> = Resolution/(2√3)</li>
-            <li>u<sub>ρ,h</sub>, u<sub>g,h</sub>, u<sub>h</sub> — ผลของความหนาแน่น, g, และความสูง</li>
-            <li>u<sub>DMM</sub>, u<sub>res,uuc</sub>, u<sub>zero</sub>, u<sub>hys</sub>, u<sub>repeat</sub></li>
-          </ul>
-        </div>
-      </div>
-      <hr class="sep"/>
-      <div class="blk">
-        <div class="label">ขั้นตอนใช้งาน</div>
-        <ol>
-          <li>Setup: กรอกช่วงวัด + เลือก Accuracy → ระบบสร้างจุดสอบเทียบอัตโนมัติ</li>
-          <li>Entry: ใส่ STD/UUC ตาม Cycle → ตารางคำนวณ Avg/Deviation/Hysteresis อัตโนมัติ</li>
-          <li>Uncertainty: กด Auto-fill หรือใส่ค่า uᵢ → ระบบคำนวณ U และ Pass/Fail</li>
-          <li>Report/Charts: ตรวจตารางสรุป, กราฟ 4 แบบ, และข้อเสนออัตโนมัติ (AI-like)</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-
-  <footer class="container small">© 2025 Pressure Calibration — DKD-R 6-1</footer>
-
-<script>
+  <!-- ====== App JS (inline) ====== -->
+  <script>
 /* ===== Utilities & State ===== */
 const pages=["dashboard","setup","entry","uncert","report","charts","help"];
 const toBar={"bar":v=>v,"kPa":v=>v/100,"Pa":v=>v/100000,"psi":v=>v*0.0689476,"mmHg":v=>v*0.00133322};
@@ -564,55 +512,13 @@ let currentJob={
   uncertainty:{ustd:0,ures:0,uzero:0,urep:0,uhyst:0,U:0},
   verdictOverall:"",
   customer:{company:"—",address:"—"},
-  place:{company:"—",address:"—"}, // Department
+  place:{company:"—",address:"—"}, // company = Department
   cert:{no:"—",received:"—",issue:"—"},
   signature:{tech:{name:"—",title:"—",date:"—"},rev:{name:"—",title:"—",date:"—"},app:{name:"—",title:"—",date:"—"}},
   limits:{acceptance:null,plant:null,enableCorrection:true}
 };
 
-/* ===== Master: Company/Address (datalist) ===== */
-const MASTER_COMPANY = [
-  { c:"Athimart Co.,Ltd.", a:"170 Moo.11, Tambon Nikhom, Amphoe Satuek" },
-  { c:"Sura Bangyikhan Co.,Ltd.", a:"82 Moo.3, Tsmbon Bang Khoo Wat, Amphoe Muang" },
-  { c:"Fuengfuanant Co.,Ltd.", a:"333 Moo.1, Tambon Tha Toom, Amphoe Si Maha Phot" },
-  { c:"Fermentation Central Officer", a:"260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai" },
-  { c:"Luckchai Liquor Trading Co.,Ltd.", a:"46 Moo.1, Tambon Nong Klang Na, Amphoe Muang" },
-  { c:"Kanchanasingkorn Co.,Ltd.", a:"50 Moo.7, Tambon Wangkhanai, Amphoe Thamuang" },
-  { c:"Kankwan Co.,Ltd.", a:"309 Moo.6, Nampong-Kranuan Road, Tambon Nampong, Amphoe Nampong" },
-  { c:"Red Bull Distillery(1988) Co.,Ltd.", a:"8 Moo.5, Setthakit 1 Road, Tambon Nadee, Amphoe Muang" },
-  { c:"Instrument Calibration Laboratory", a:"260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai" },
-  { c:"Mongkolsamai Co.,Ltd.", a:"149 Moo.5, Wangseesoob Ngew-Ngam Road, Tambon Phajud, Amphoe Muang" },
-  { c:"Nateechai Co.,Ltd.", a:"1 Moo.2, Highway No.41 Road, Tambon Tharongchang, Amphoe Punpin" },
-  { c:"United Products Co.,Ltd.", a:"56 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri" },
-  { c:"Sura Piset Pattharalanna Co.,Ltd.", a:"14 Sangsom Building, Soi Yasoob 1, Vibhavadi Rangsit Road, Chomphon, Chatuchak" },
-  { c:"Sangsom Co.,Ltd. (Hormkret)", a:"49 Moo.4, Tambon Hormkret, Amphoe Sampran" },
-  { c:"Sangsom Co.,Ltd. (Wangkhanai)", a:"37/3 Moo.7, Tambon Wangkhanai, Amphoe Thamuang" },
-  { c:"S.S. Karnsura Co.,Ltd.", a:"101 Moo.8, Tambon Kaeng Dom, King Amphoe Sawang Wirawong" },
-  { c:"Simathurakij Co.,Ltd.", a:"1 Moo.6, Tambon Ban Daen, Amphoe Banphot Phisai" },
-  { c:"SPM Foods and Beverages Co.,Ltd.", a:"79 Moo.3, Tambon Lumlookbua, Amphoe Dontoom" },
-  { c:"Thanapakdi Co.,Ltd.", a:"315 Moo.4, Tambon Mae Faek, Amphoe San Sai" },
-  { c:"Sura Piset Thipharat Co.,Ltd.", a:"488 Moo.1, Tambon Wangdong, Amphoe Muang" },
-  { c:"Theparunothai Co.,Ltd.", a:"99 Moo.4, Tambon Hat Kham, Amphoe Muang" },
-  { c:"United Winery and Distillery Co.,Ltd.", a:"54 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri" },
-];
-function populateCompanyMaster(){
-  const cList = $("companyList"); const aList = $("addressList");
-  cList.innerHTML=""; aList.innerHTML="";
-  MASTER_COMPANY.forEach(x=>{
-    const o1=document.createElement("option"); o1.value=x.c; cList.appendChild(o1);
-    const o2=document.createElement("option"); o2.value=x.a; aList.appendChild(o2);
-  });
-  $("custCompany").addEventListener("change", ()=>{
-    const f = MASTER_COMPANY.find(x=>x.c===val("custCompany"));
-    if(f){ $("custAddr").value = f.a; }
-  });
-  $("placeDept").addEventListener("change", ()=>{
-    const f = MASTER_COMPANY.find(x=>x.c===val("placeDept"));
-    if(f){ $("placeAddr").value = f.a; }
-  });
-}
-
-/* ===== Local storage ===== */
+// localStorage persistence
 async function saveJob(job){
   const l=JSON.parse(localStorage.getItem("cal_jobs")||"[]");
   if(!job.id){job.id="local_"+Date.now(); l.push(job);}
@@ -624,10 +530,13 @@ async function loadJobs(){return JSON.parse(localStorage.getItem("cal_jobs")||"[
 async function deleteJob(id){const l=(await loadJobs()).filter(x=>x.id!==id); localStorage.setItem("cal_jobs",JSON.stringify(l)); refreshDashboard();}
 
 /* ===== Navigation ===== */
-$("nav").addEventListener("click",e=>{ if(e.target.classList.contains("tab")) switchPage(e.target.dataset.page); });
+document.querySelector("#nav").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t) return;
+  switchPage(t.dataset.page);
+});
 function switchPage(p){
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
-  pages.forEach(id=>$("page-"+id).classList.toggle("hidden",id!==p));
+  pages.forEach(id=>{ const sec=$("page-"+id); if(sec) sec.classList.toggle("hidden",id!==p); });
   location.hash=p;
   if(p==="entry"){ autoBuildEntry(); }
   if(p==="report"){ buildReportHeader(); ensureResults(); buildResultTable(); makeAutoAnalysis(); }
@@ -706,12 +615,37 @@ $("btnPrintTag").addEventListener("click",async()=>{
 });
 $("btnCloseTag").addEventListener("click",()=>$("tagArea").classList.add("hidden"));
 
+/* ===== Masters (from inline window.MASTERS) ===== */
+function populateCompanyMaster(){
+  const comps = (window.MASTERS && window.MASTERS.companies) ? window.MASTERS.companies : [];
+  const depts = (window.MASTERS && window.MASTERS.departments) ? window.MASTERS.departments : [];
+
+  const cList = $("companyList"); const aList = $("addressList"); const dList = $("deptList");
+  if (cList) cList.innerHTML = "";
+  if (aList) aList.innerHTML = "";
+  if (dList) dList.innerHTML = "";
+
+  comps.forEach(x=>{
+    const o1=document.createElement("option"); o1.value=x.c; cList.appendChild(o1);
+    const o2=document.createElement("option"); o2.value=x.a; aList.appendChild(o2);
+  });
+  depts.forEach(name=>{ const o=document.createElement("option"); o.value=name; dList.appendChild(o); });
+
+  const cc=$("custCompany"), ca=$("custAddr");
+  if(cc && ca){
+    cc.addEventListener("change", ()=>{
+      const f = comps.find(x=>x.c===cc.value);
+      if(f){ ca.value = f.a; }
+    });
+  }
+}
+
 /* ===== Setup ===== */
 function fillSetupForm(){
   const i=currentJob.instrument, e=currentJob.environment, a=currentJob.accuracy, s=currentJob.signature;
   $("custCompany").value=currentJob.customer.company||"";
   $("custAddr").value=currentJob.customer.address||"";
-  $("placeDept").value=currentJob.place.company||"";  // Department
+  $("placeDept").value=currentJob.place.company||"";  // ใช้ company เป็น Department
   $("placeAddr").value=currentJob.place.address||"";
   $("certNo").value=currentJob.cert.no||"";
   $("certReceived").value=currentJob.cert.received||"";
@@ -785,8 +719,7 @@ window.delStd=(idx)=>{currentJob.standards_used.splice(idx,1); renderStdList();}
 $("btnSaveSetup").addEventListener("click",async()=>{
   currentJob.customer.company=val("custCompany")||"—";
   currentJob.customer.address=val("custAddr")||"—";
-
-  // Department (แทน placeCompany)
+  // ใช้ Department เป็น place.company
   currentJob.place.company=val("placeDept")||"—";
   currentJob.place.address=val("placeAddr")||"—";
 
@@ -837,7 +770,12 @@ function cell(ri,dir,idx,key){
   const v=currentJob.table[ri][dir][idx][key]||"";
   return `<td><input class="input mcell" data-ri="${ri}" data-dir="${dir}" data-idx="${idx}" data-key="${key}" type="number" step="0.00001" value="${v}"></td>`;
 }
-// เก็บค่าขณะพิมพ์ แล้วคำนวณตอน blur/change
+// single-click focus/select
+document.addEventListener('pointerdown',(e)=>{
+  if(e.target.matches('.mcell')){
+    const el=e.target; if(!el.dataset.clicked){ el.focus(); el.select(); el.dataset.clicked=1; }
+  }
+});
 function handleEntryEdit(e){
   if(!e.target.classList.contains("mcell"))return;
   const ri=+e.target.dataset.ri, dir=e.target.dataset.dir, idx=+e.target.dataset.idx, key=e.target.dataset.key;
@@ -846,7 +784,6 @@ function handleEntryEdit(e){
 }
 $("entryTableWrap").addEventListener("change",handleEntryEdit);
 $("entryTableWrap").addEventListener("blur",function(e){ handleEntryEdit(e); calcTable(); },true);
-
 function calcTable(){
   const cyc=getCycles();
   currentJob.table.forEach(r=>{
@@ -966,40 +903,26 @@ function buildResultTable(){
 }
 function buildReportHeader(){
   const i=currentJob.instrument, e=currentJob.environment, a=currentJob.accuracy, u=currentJob.uncertainty, s=currentJob.signature;
-  // Customer & Department
   setTxt("rCustomer",currentJob.customer.company); setTxt("rCustAddr",currentJob.customer.address);
   setTxt("rPlaceCompany",currentJob.place.company); setTxt("rPlaceAddr",currentJob.place.address);
-
-  // Cert & dates
-  setTxt("rCertNo",currentJob.cert.no); setTxt("rReceived",currentJob.cert.received);
-  setTxt("rCalDate",i.calDate||"—"); setTxt("rIssueDate",currentJob.cert.issue||i.calDate||"—");
-
-  // UUC
+  setTxt("rCertNo",currentJob.cert.no); setTxt("rReceived",currentJob.cert.received); setTxt("rCalDate",i.calDate||"—"); setTxt("rIssueDate",currentJob.cert.issue||i.calDate||"—");
   setTxt("rType",i.type); setTxt("rModel",i.model); setTxt("rSerial",i.serial); setTxt("rMfg",i.mfg);
-  setTxt("rMeasureRange",`${i.rangeMin}–${i.rangeMax} ${i.unit}`);
-  setTxt("rCalRange",`${(a.points[0]!=null)?a.points[0]:"-"} … ${(a.points[a.points.length-1]!=null)?a.points[a.points.length-1]:"-"} bar`);
+  setTxt("rMeasureRange",`${i.rangeMin}–${i.rangeMax} ${i.unit}`); setTxt("rCalRange",`${(a.points[0]!=null)?a.points[0]:"-"} … ${(a.points[a.points.length-1]!=null)?a.points[a.points.length-1]:"-"} bar`);
   setTxt("rResolution", currentJob.standard.res!=null? currentJob.standard.res+" bar":"—");
-
   const acceptance=getAcceptanceLimit(); setTxt("rMPE", acceptance+" bar"); setTxt("rPlantLimit", (currentJob.limits.plant!=null? currentJob.limits.plant+" bar":"—"));
   $("rVerdict").innerHTML=`<span class="badge ${currentJob.verdictOverall==='Pass'?'pass':'fail'}">${currentJob.verdictOverall||"—"}</span>`;
   setTxt("rU",fmt(u.U));
-
-  // Standards used
   const t=$("stdBody"); t.innerHTML="";
   const list=(currentJob.standards_used&&currentJob.standards_used.length)? currentJob.standards_used : [{
     serial: currentJob.standard.serial||"—", cert: currentJob.standard.cert||"—", calDate:"—", dueDate:"—", desc: currentJob.standard.name||"—", status:"OK"
   }];
   list.forEach(su=>{const tr=document.createElement("tr"); tr.innerHTML=`<td>${su.serial}</td><td>${su.cert}</td><td>${su.calDate}</td><td>${su.dueDate}</td><td>${su.desc}</td><td>${su.status}</td>`; t.appendChild(tr);});
-
-  // Env
   setTxt("rAmbT",e.temp??"—"); setTxt("rAmbH",e.humid??"—"); setTxt("rAmbP",e.atm??"—");
-
-  // Signatures
   setTxt("sigTechNameOut",s.tech.name); setTxt("sigTechTitleOut",s.tech.title); setTxt("sigTechDateOut",s.tech.date);
   setTxt("sigRevNameOut",s.rev.name); setTxt("sigRevTitleOut",s.rev.title); setTxt("sigRevDateOut",s.rev.date);
   setTxt("sigAppNameOut",s.app.name); setTxt("sigAppTitleOut",s.app.title); setTxt("sigAppDateOut",s.app.date);
 }
-function setTxt(id,text){ $(id).innerText=(text==null||text==="")?"—":text; }
+function setTxt(id,text){ const el=$(id); if(el) el.innerText=(text==null||text==="")?"—":text; }
 
 let cAcc,cErr,cPlus,cMinus;
 function buildCharts(){
@@ -1007,24 +930,30 @@ function buildCharts(){
   const devs=currentJob.results.map(r=>r.deviation||0);
   const U=currentJob.results.map(r=>r.U||0);
   const acceptance=getAcceptanceLimit();
-  const FS=((toBar[currentJob.instrument.unit]||((x)=>x))(currentJob.instrument.rangeMax||0)
-           - (toBar[currentJob.instrument.unit]||((x)=>x))(currentJob.instrument.rangeMin||0));
-  const accLine=pts.map(()=> +((0.003*FS)).toFixed(6)); // example 0.3%FS
+  const mpeLine=pts.map(()=>+acceptance.toFixed(6));
+  const mpeLineNeg=pts.map(()=>-+acceptance.toFixed(6));
 
   if(cAcc) cAcc.destroy(); if(cErr) cErr.destroy(); if(cPlus) cPlus.destroy(); if(cMinus) cMinus.destroy();
+
   cAcc=new Chart($("chartAccuracy"),{type:"line",data:{labels:pts,datasets:[
-      {label:"Accuracy (+/-0.3%FS)",data:accLine,borderDash:[6,6],fill:false}
+    {label:"±Accuracy ref FS (demo)",data:pts.map(()=>0),borderDash:[6,6],pointRadius:0}
   ]},options:{responsive:true}});
+
   cErr=new Chart($("chartError"),{type:"line",data:{labels:pts,datasets:[
-      {label:"Error",data:devs}
+    {label:"Error (Deviation)",data:devs},
+    {label:"+MPE (Acceptance)",data:mpeLine,borderDash:[6,6],pointRadius:0},
+    {label:"-MPE (Acceptance)",data:mpeLineNeg,borderDash:[6,6],pointRadius:0}
   ]},options:{responsive:true}});
+
   const errPlus=devs.map((d,i)=>d+(U[i]||0));
   const errMinus=devs.map((d,i)=>d-(U[i]||0));
   cPlus=new Chart($("chartErrPlusU"),{type:"line",data:{labels:pts,datasets:[
-      {label:"Error + Uncer",data:errPlus}
+    {label:"Error + U(k=2)",data:errPlus},
+    {label:"+MPE",data:mpeLine,borderDash:[6,6],pointRadius:0}
   ]},options:{responsive:true}});
   cMinus=new Chart($("chartErrMinusU"),{type:"line",data:{labels:pts,datasets:[
-      {label:"Error - Uncer",data:errMinus}
+    {label:"Error - U(k=2)",data:errMinus},
+    {label:"-MPE",data:mpeLineNeg,borderDash:[6,6],pointRadius:0}
   ]},options:{responsive:true}});
 
   $("aiCharts").innerHTML =
@@ -1066,7 +995,7 @@ function makeAICharts(){
   $("aiCharts").innerHTML = `<ul><li>${bullets.join("</li><li>")}</li></ul>`;
 }
 
-/* ===== Export PDF ===== */
+/* Export PDF */
 $("btnMakePDF").addEventListener("click",async()=>{
   buildReportHeader(); ensureResults(); buildResultTable(); makeAutoAnalysis();
   const doc=new jspdf.jsPDF({unit:"pt",format:"a4"});
@@ -1076,7 +1005,7 @@ $("btnMakePDF").addEventListener("click",async()=>{
   doc.addImage(img,"PNG",20,20,imgW,imgH); doc.save(`Calibration_${currentJob.instrument.serial||"report"}.pdf`);
 });
 
-/* ===== Export CSV (header fixed) ===== */
+/* Export CSV (fixed head) */
 $("btnCSV").addEventListener("click", () => {
   const head = ","UUC","Dev[bar](2-1)","U[bar]","Result"];
   const lines = [head.join(",")];
@@ -1130,6 +1059,6 @@ function init(){
   if(location.hash){const h=location.hash.slice(1); if(pages.includes(h)) switchPage(h);}
 }
 init();
-</script>
+  </script>
 </body>
 </html>
