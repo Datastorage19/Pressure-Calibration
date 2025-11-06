@@ -1,0 +1,55 @@
+// Master data for companies and addresses
+const masterData = {
+  companies: [
+    "Athimart Co.,Ltd.",
+    "Sura Bangyikhan Co.,Ltd.",
+    "Fuengfuanant Co.,Ltd.",
+    "Fermentation Central Officer",
+    "Luckchai Liquor Trading Co.,Ltd.",
+    "Kanchanasingkorn Co.,Ltd.",
+    "Kankwan Co.,Ltd.",
+    "Red Bull Distillery(1988) Co.,Ltd.",
+    "Instrument Calibration Laboratory",
+    "Mongkolsamai Co.,Ltd.",
+    "Nateechai Co.,Ltd.",
+    "United Products Co.,Ltd.",
+    "Sura Piset Pattharalanna Co.,Ltd.",
+    "Sangsom Co.,Ltd.",
+    "S.S. Karnsura Co.,Ltd.",
+    "Simathurakij Co.,Ltd.",
+    "SPM Foods and Beverages Co.,Ltd.",
+    "Thanapakdi Co.,Ltd.",
+    "Sura Piset Thipharat Co.,Ltd.",
+    "Theparunothai Co.,Ltd.",
+    "United Winery and Distillery Co.,Ltd."
+  ],
+  addresses: [
+    "170 Moo.11, Tambon Nikhom, Amphoe Satuek",
+    "82 Moo.3, Tsmbon Bang Khoo Wat, Amphoe Muang",
+    "333 Moo.1, Tambon Tha Toom, Amphoe Si Maha Phot",
+    "260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai",
+    "46 Moo.1, Tambon Nong Klang Na, Amphoe Muang",
+    "50 Moo.7, Tambon Wangkhanai, Amphoe Thamuang",
+    "309 Moo.6, Nampong-Kranuan Road, Tambon Nampong, Amphoe Nampong",
+    "8 Moo.5, Setthakit 1 Road, Tambon Nadee, Amphoe Muang",
+    "260 Sangsom Building, Phaholyothin Road, Samsen-Nai Phayathai",
+    "149 Moo.5, Wangseesoob Ngew-Ngam Road, Tambon Phajud, Amphoe Muang",
+    "1 Moo.2, Highway No.41 Road, Tambon Tharongchang, Amphoe Punpin",
+    "56 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri",
+    "14 Sangsom Building,Soi Yasoob 1,Vibhavadi Rangsit Road, Chomphon Sub-district,Chatuchack District",
+    "49 Moo.4, Tambon Hormkret, Amphoe Sampran",
+    "37/3 Moo.7, Tambon Wangkhanai, Amphoe Thamuang",
+    "101 Moo.8, Tambon Kaeng Dom, King Amphoe Sawang Wirawong",
+    "1 Moo.6 Tambon Ban Daen, Amphoe Banphot Phisai",
+    "79 Moo.3, Tambon Lumlookbua, Amphoe Dontoom",
+    "315 Moo.4, Tambon Mae Faek, Amphoe San Sai",
+    "488 Moo.1, Tambon Wangdong, Amphoe Muang",
+    "99 Moo.4, Tambon Hat Kham, Amphoe Muang",
+    "54 Moo.2, Sukhaphiban Road, Tambon Nakhonchaisri, Amphoe Nakhonchaisri"
+  ],
+  departments: [
+    "แผนกกลั่นสุรา",
+    "แผนกหมักส่า",
+    "แผนกอื่นๆโปรดระบุ"
+  ]
+};
