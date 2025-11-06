@@ -9,17 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 
-  <!-- Vendors (โหลดก่อน app.js) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <!-- Vendors (defer ให้โหลดหลัง DOM parsing) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js" defer></script>
 
-  <!-- (Optional) Firebase ถ้าจะใช้ค่อยเปิด -->
+  <!-- (Optional) Firebase – ถ้ายังไม่ใช้ ให้คอมเมนต์ไว้ -->
   <!--
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
-  <script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js" defer></script>
+  <script defer>
     const firebaseConfig = {/* TODO: ใส่ config */};
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -30,7 +30,10 @@
   <!-- Topbar & Tabs -->
   <div class="topbar">
     <div class="container">
-      <div class="top-title">Pressure Calibration — DKD-R 6-1</div>
+      <div class="top-title">
+        <img src="assets/thaiBev-logo.png" alt="ThaiBev" style="height:24px;vertical-align:middle;margin-right:8px;">
+        Pressure Calibration — DKD-R 6-1
+      </div>
       <div class="tabs" id="nav">
         <button class="tab active" data-page="dashboard">1) Dashboard</button>
         <button class="tab" data-page="setup">2) Calibration Setup</button>
@@ -43,8 +46,8 @@
     </div>
   </div>
 
-  <!-- AUTH BAR -->
-  <header class="topbar" style="background:#0b3819; border-bottom:0; margin-bottom:8px;">
+  <!-- Auth bar -->
+  <header class="topbar" style="background:#0b3819;border-bottom:0;margin-bottom:8px;">
     <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
       <div class="small" id="who" style="color:#fff;font-weight:700;">ยังไม่ได้ล็อกอิน</div>
       <div>
@@ -54,14 +57,8 @@
     </div>
   </header>
 
-  <!-- โลโก้ต้องอยู่ใน BODY ไม่ใช่ HEAD -->
-  <div class="container" style="margin:10px 0;">
-    <img src="assets/thaiBev-logo.png" alt="ThaiBev" style="height:34px;object-fit:contain" />
-  </div>
-
-  <!-- ===== APP WRAPPER (เริ่มซ่อนแอปจนกว่าจะล็อกอิน) ===== -->
+  <!-- ===== APP WRAPPER (ซ่อนจนกว่าจะล็อกอิน) ===== -->
   <main id="app" class="hidden">
-
     <!-- 1) Dashboard -->
     <div class="container" id="page-dashboard">
       <div class="card">
@@ -84,6 +81,8 @@
             </select>
             <button class="btn" id="btnNew">+ สร้างงานใหม่</button>
             <button class="btn ghost" id="btnPrintTag">ออก Tag อุปกรณ์</button>
+            <button class="btn warn" id="btnReset">Reset data</button>
+            <button class="btn ghost" id="btnSeed">Seed demo</button>
           </div>
         </div>
 
@@ -124,42 +123,30 @@
 
     <!-- 2) Setup -->
     <div class="container hidden" id="page-setup">
-      <!-- ... (ส่วน Setup ตามที่คุณวางไว้) ... -->
+      <!-- … (ส่วน Setup/Entry/Uncert/Report/Charts/Guide เหมือนของเดิมของคุณ) … -->
+      <!-- ไม่ต้องแก้อะไรเพิ่มเติมใน markup ตรงนี้ -->
     </div>
 
     <!-- 3) Entry -->
-    <div class="container hidden" id="page-entry">
-      <!-- ... (ส่วน Entry ตามที่คุณวางไว้) ... -->
-    </div>
+    <div class="container hidden" id="page-entry"></div>
 
     <!-- 4) Uncertainty -->
-    <div class="container hidden" id="page-uncert">
-      <!-- ... (ส่วน Uncertainty ตามที่คุณวางไว้) ... -->
-    </div>
+    <div class="container hidden" id="page-uncert"></div>
 
     <!-- 5) Report -->
-    <div class="container hidden" id="page-report">
-      <!-- ... (ส่วน Report ตามที่คุณวางไว้) ... -->
-    </div>
+    <div class="container hidden" id="page-report"></div>
 
     <!-- 6) Charts -->
-    <div class="container hidden" id="page-charts">
-      <!-- ... (ส่วน Charts ตามที่คุณวางไว้) ... -->
-    </div>
+    <div class="container hidden" id="page-charts"></div>
 
     <!-- 7) Guide -->
-    <div class="container hidden" id="page-help">
-      <!-- ... (ส่วน Guide ตามที่คุณวางไว้) ... -->
-    </div>
+    <div class="container hidden" id="page-help"></div>
 
     <footer class="container small">© 2025 Pressure Calibration — DKD-R 6-1</footer>
   </main>
-  <!-- ===== /APP WRAPPER ===== -->
 
-  <!-- โหลดสคริปต์หลัก: เลือกแบบเดียว “module” หรือ “classic” -->
-  <!-- แบบ module (ถ้าใน app.js มี import/export) -->
+  <!-- โหลดสคริปต์หลัก (ตัวเดียวพอ) -->
   <script type="module" src="js/app.js"></script>
-  <!-- หรือแบบ classic (ถ้าไม่มี import/export) -->
-  <!-- <script src="js/app.js"></script> -->
+  <noscript>โปรดเปิดใช้ JavaScript</noscript>
 </body>
 </html>
