@@ -1,0 +1,644 @@
+:root{
+  --brand:#1b8f3a; 
+  --ink:#0f172a; 
+  --muted:#64748b; 
+  --bg:#f5f7f5; 
+  --card:#ffffff; 
+  --line:#dbe7d9;
+  --pass:#16a34a; 
+  --fail:#dc2626; 
+  --warn:#f59e0b; 
+  --page:1200px;
+}
+
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Sarabun",system-ui,Segoe UI,Tahoma,sans-serif;
+  font-size:16px;
+  line-height:1.5
+}
+
+.container{
+  max-width:var(--page);
+  margin:0 auto;
+  padding:16px
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px
+}
+
+.grid{
+  display:grid;
+  gap:12px
+}
+
+.grid-2{
+  grid-template-columns:1fr 1fr
+}
+
+.grid-3{
+  grid-template-columns:repeat(3,1fr)
+}
+
+.grid-4{
+  grid-template-columns:repeat(4,1fr)
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap
+}
+
+.row.nowrap{
+  flex-wrap:nowrap;
+  overflow-x:auto
+}
+
+.row.nowrap>*{
+  flex:0 0 auto
+}
+
+.row .input{
+  min-width:0
+}
+
+/* Topbar + Tabs: single line, equal width, no wrap */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--brand);
+  color:#fff;
+  padding:12px 16px;
+  border-bottom:3px solid #0f4f25
+}
+
+.top-title{
+  font-weight:700
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0,1fr));
+  gap:8px; 
+  margin-top:10px;
+  white-space:nowrap;     /* no wrap */
+  overflow-x:auto;        /* scroll if needed */
+  scrollbar-width:thin;
+}
+
+.tab{
+  appearance:none;
+  border:0;
+  background:#eaf5ed;
+  color:#0b3819;
+  padding:10px 12px;
+  border-radius:999px;
+  font-weight:700;
+  cursor:pointer;
+  text-align:center;
+  white-space:nowrap
+}
+
+.tab.active{
+  background:#0b3819;
+  color:#fff
+}
+
+.tab:focus{
+  outline:2px solid #0b3819
+}
+
+/* Inputs */
+label{
+  font-weight:700
+}
+
+.input,select,textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+  font-family:inherit
+}
+
+.helper{
+  font-size:.9rem;
+  color:var(--muted)
+}
+
+.btn{
+  background:var(--brand);
+  color:#fff;
+  border:0;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer
+}
+
+.btn.ghost{
+  background:#fff;
+  color:var(--brand);
+  border:1px solid var(--brand)
+}
+
+.btn.dark{
+  background:var(--ink)
+}
+
+.btn.warn{
+  background:var(--warn)
+}
+
+.btn.fail{
+  background:var(--fail)
+}
+
+.small{
+  font-size:.9rem;
+  color:var(--muted)
+}
+
+.sep{
+  border:0;
+  border-top:1px dashed var(--line);
+  margin:14px 0
+}
+
+/* Dashboard KPI equal cards */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px
+}
+
+.kpi{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:98px
+}
+
+.kpi .n{
+  font-size:1.8rem;
+  font-weight:800
+}
+
+/* เพิ่มสไตล์สำหรับ dropdown ที่หน้า Dashboard */
+.searchable-dropdown {
+    position: relative;
+    flex: 1;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 100%;
+    overflow: auto;
+    z-index: 1;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    max-height: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.dropdown-content div {
+    color: black;
+    padding: 12px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+}
+
+.dropdown-content div:hover {
+    background-color: #f1f1f1
+}
+
+.show {
+    display: block;
+}
+
+/* Table */
+.table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.95rem
+}
+
+.table th,.table td{
+  border-bottom:1px solid #e7efe5;
+  padding:8px 10px;
+  text-align:left;
+  vertical-align:top
+}
+
+.table th{
+  background:#f2f7f3
+}
+
+/* Badges */
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:.85rem;
+  font-weight:800
+}
+
+.badge.pass{
+  background:#e8f7ee;
+  color:var(--pass);
+  border:1px solid #bfeacc
+}
+
+.badge.fail{
+  background:#fee2e2;
+  color:var(--fail);
+  border:1px solid #fecaca
+}
+
+/* Report blocks */
+.blk{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:#fff
+}
+
+.label{
+  color:#0b3819;
+  font-weight:700;
+  border-bottom:1px solid #e7efe5;
+  padding-bottom:6px;
+  margin-bottom:6px
+}
+
+.report-head{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:12px
+}
+
+.report-grid{
+  display:grid;
+  gap:12px
+}
+
+.report-3{
+  grid-template-columns:1fr 1fr 1fr
+}
+
+.report-2{
+  grid-template-columns:1fr 1fr
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-container {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-logo {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.header-text {
+  flex: 1;
+}
+
+/* Env fields equal & level */
+.env-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  align-items:end;        /* bottom align makes inputs level */
+}
+
+.env-grid label{
+  min-height:22px;
+  display:block
+}
+
+.env-grid .input{
+  height:44px;
+  line-height:44px
+}
+
+/* Range inputs alignment */
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-inputs span {
+  font-weight: bold;
+}
+
+/* Tags */
+.tag-sheet{
+  margin-top:10px
+}
+
+.tag-list{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap
+}
+
+.tag{
+  width:300px;
+  border:2px dashed var(--ink);
+  border-radius:12px;
+  padding:12px
+}
+
+.tag .h{
+  font-weight:800
+}
+
+.tag .l{
+  font-size:.9rem
+}
+
+/* Signatures: leave bottom space for real signatures */
+.sig-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+  margin-bottom:80px
+}
+
+.sig-box{
+  border-top:1px solid #111;
+  padding-top:8px;
+  text-align:center;
+  min-height:90px
+}
+
+/* Print only tags */
+@media print{
+  body *{visibility:hidden}
+  .tag-sheet, .tag-sheet *{visibility:visible}
+  .tag-sheet{position:absolute;left:0;top:0;width:100%}
+}
+
+/* Visibility */
+.hidden{display:none !important}
+
+/* Searchable Dropdown */
+.searchable-dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 100%;
+  overflow: auto;
+  z-index: 1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  max-height: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.dropdown-content div {
+  color: black;
+  padding: 12px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdown-content div:hover {
+  background-color: #f1f1f1
+}
+
+.show {
+  display: block;
+}
+
+/* แก้ไขปัญหา dropdown ที่หน้า Dashboard */
+.searchable-dropdown {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+  z-index: 10;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 100%;
+  overflow: auto;
+  z-index: 1000;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  max-height: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.dropdown-content div {
+  color: black;
+  padding: 12px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdown-content div:hover {
+  background-color: #f1f1f1
+}
+
+.show {
+  display: block;
+}
+
+/* แก้ไขปัญหาตารางในหน้า Report */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+  margin-top: 10px;
+}
+
+.report-table th, .report-table td {
+  border: 1px solid #e7efe5;
+  padding: 8px 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.report-table th {
+  background-color: #f2f7f3;
+  font-weight: 600;
+}
+
+.report-table td {
+  text-align: center;
+}
+
+.report-table .text-left {
+  text-align: left;
+}
+
+/* ปรับปรุงการแสดงผลของแถวในตาราง */
+.table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.table tbody tr.selected {
+  background-color: #e8f7ee;
+}
+
+/* แก้ไขปัญหาตารางในหน้า Report */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+  margin-top: 10px;
+}
+
+.report-table th, .report-table td {
+  border: 1px solid #e7efe5;
+  padding: 8px 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.report-table th {
+  background-color: #f2f7f3;
+  font-weight: 600;
+}
+
+.report-table td {
+  text-align: center;
+}
+
+.report-table .text-left {
+  text-align: left;
+}
+
+/* เพิ่ม CSS นี้ในไฟล์ styles.css */
+
+/* แก้ไขปัญหา dropdown ที่ลอยออกมาหน้าสุด */
+.searchable-dropdown {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    min-width: 100%;
+    overflow: auto;
+    z-index: 100;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    max-height: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 2px;
+}
+
+.dropdown-content div {
+    color: black;
+    padding: 12px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+}
+
+.dropdown-content div:hover {
+    background-color: #f1f1f1
+}
+
+.show {
+    display: block;
+}
+
+/* ทำให้ input ใน dropdown มีขนาดเท่ากับ input ปกติ */
+.searchable-dropdown .input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Uncertainty Explanation */
+.uncertainty-explanation {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.uncertainty-explanation h4 {
+  margin-top: 0;
+  color: var(--brand);
+}
+
+.uncertainty-explanation ul {
+  margin-bottom: 0;
+}
+
+/* Chart Explanation */
+.chart-explanation {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.chart-explanation h4 {
+  margin-top: 0;
+  color: var(--brand);
+}
+
+.chart-explanation p {
+  margin-bottom: 10px;
+}
+
+.chart-explanation ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.chart-explanation li {
+  margin-bottom: 5px;
+}
