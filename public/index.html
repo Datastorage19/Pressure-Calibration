@@ -40,7 +40,22 @@
     </div>
   </div>
 
+  <!-- ===== AUTH BAR (เพิ่มใหม่) ===== -->
+<header class="topbar" style="background:#0b3819; border-bottom:0; margin-bottom:8px;">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+    <div class="small" id="who" style="color:#fff;font-weight:700;">ยังไม่ได้ล็อกอิน</div>
+    <div>
+      <button id="btnSignIn" class="btn">Sign in with GitHub</button>
+      <button id="btnSignOut" class="btn ghost hidden">Sign out</button>
+    </div>
+  </div>
+</header>
+
+  
   <!-- 1) Dashboard -->
+  <!-- ===== APP WRAPPER (เริ่มซ่อนแอปจนกว่าจะล็อกอิน) ===== -->
+<main id="app" class="hidden">
+  
   <div class="container" id="page-dashboard">
     <div class="card">
       <div class="row" style="justify-content:space-between">
@@ -477,6 +492,9 @@
   </div>
 
   <footer class="container small">© 2025 Pressure Calibration — DKD-R 6-1</footer>
+  </main>
+<!-- ===== /APP WRAPPER ===== -->
+
 
   <script src="js/app.js"></script>
 </body>
