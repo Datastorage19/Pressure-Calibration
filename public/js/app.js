@@ -526,25 +526,51 @@ $("btnMakePDF").addEventListener("click",async()=>{
   const imgW=pageW-40; const imgH=canvas.height*(imgW/canvas.width);
   doc.addImage(img,"PNG",20,20,imgW,imgH); doc.save(`Calibration_${currentJob.instrument.serial||"report"}.pdf`);
 });
-$("btnCSV").addEventListener("click",()=>{
-  const head=","UUC","Dev[bar](2-1)","U[bar]","Result"]; const lines=[head.join(",")];
-  const i=currentJob.instrument, unit=i.unit||"bar";
-  const toBarFn = toBar[unit] || (x=>x);
-  const pminBar = toBarFn(parseFloat(i.rangeMin)||0);
-  const pmaxBar = toBarFn(parseFloat(i.rangeMax)||0);
-  const isTX = (i.type||"").toLowerCase().includes("transmitter");
-  (currentJob.results||[]).forEach((r)=>{
-    const stdBar = r.std!=null ? r.std : null;
+// ===== Export CSV (FIXED) =====
+$("btnCSV").addEventListener("click", () => {
+  const head = ","UUC","Dev[bar](2-1)","U[bar]","Result"];
+  const lines = [head.join(",")];
+
+  const i = currentJob.instrument, unit = i.unit || "bar";
+  const toBarFn = toBar[unit] || (x => x);
+  const pminBar = toBarFn(parseFloat(i.rangeMin) || 0);
+  const pmaxBar = toBarFn(parseFloat(i.rangeMax) || 0);
+  const isTX = (i.type || "").toLowerCase().includes("transmitter");
+
+  (currentJob.results || []).forEach((r) => {
+    const stdBar = r.std ?? null;
     let uuc_mA = null, calcP_bar = null;
-    if(isTX){
-      uuc_mA = (r.uuc!=null ? r.uuc : null);
-      if(uuc_mA!=null){ calcP_bar = pminBar + ((uuc_mA - 4)/(20 - 4)) * (pmaxBar - pminBar); calcP_bar = +calcP_bar.toFixed(6); }
-    }else{ if(r.uuc!=null) calcP_bar = +(+r.uuc).toFixed(6); }
-    const dev2 = (calcP_bar!=null && stdBar!=null) ? +(calcP_bar - stdBar).toFixed(6) : (r.deviation!=null? +(+r.deviation).toFixed(6) : null);
-    const out=[stdBar!=null?fmt(stdBar):"-", isTX?(uuc_mA!=null?fmt(uuc_mA):"-"):"-", calcP_bar!=null?fmt(calcP_bar):"-", dev2!=null?fmt(dev2):"-", r.U!=null?fmt(r.U):"-", r.pass?"PASS":"FAIL"];
+
+    if (isTX) {
+      uuc_mA = r.uuc ?? null;
+      if (uuc_mA != null) {
+        calcP_bar = pminBar + ((uuc_mA - 4) / 16) * (pmaxBar - pminBar);
+        calcP_bar = +calcP_bar.toFixed(6);
+      }
+    } else {
+      if (r.uuc != null) calcP_bar = +(+r.uuc).toFixed(6);
+    }
+
+    const dev2 = (calcP_bar != null && stdBar != null)
+      ? +(calcP_bar - stdBar).toFixed(6)
+      : (r.deviation != null ? +(+r.deviation).toFixed(6) : null);
+
+    const out = [
+      stdBar != null ? fmt(stdBar) : "-",
+      isTX ? (uuc_mA != null ? fmt(uuc_mA) : "-") : "-",
+      calcP_bar != null ? fmt(calcP_bar) : "-",
+      dev2 != null ? fmt(dev2) : "-",
+      r.U != null ? fmt(r.U) : "-",
+      r.pass ? "PASS" : "FAIL"
+    ];
     lines.push(out.join(","));
   });
-  const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`Calibration_${currentJob.instrument.serial||"data"}.csv`; a.click();
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Calibration_${currentJob.instrument.serial || "data"}.csv`;
+  a.click();
 });
 
 /* Export to Google Drive via Apps Script */
