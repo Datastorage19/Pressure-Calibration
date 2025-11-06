@@ -1,306 +1,74 @@
-/* =========================================
-   Pressure Calibration — style.css (FULL)
-   ========================================= */
-
-/* ---------- CSS Variables ---------- */
 :root{
-  --brand:#1b8f3a;
-  --brand-2:#2ca84a;
-  --ink:#223;
-  --muted:#6a7a78;
-  --bg:#eef3ef;
-  --card:#fff;
-  --border:#dbe6dd;
-  --fail:#c0392b;
-  --pass:#1e8449;
-  --warn:#b9770e;
-  --shadow:0 8px 20px rgba(0,0,0,.06);
-  --page-w:1100px;
+  --brand:#1b8f3a; --brand-2:#2ca84a; --light:#e9f7ef; --ink:#233; --border:#cfe3d6;
+  --bg:#f4f6f5; --page-w:1100px;
 }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 
-/* ---------- Base ---------- */
-*{ box-sizing:border-box }
-html,body{ height:100% }
-body{
-  margin:0;
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  color:var(--ink);
-  background:var(--bg);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+.topbar{
+  position:sticky; top:0; z-index:10;
+  background:#fff; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px; padding:10px 16px; white-space:nowrap; overflow:hidden;
 }
-
-.container{
-  max-width:var(--page-w);
-  margin:0 auto;
-  padding:16px;
-}
-
-/* ---------- Cards ---------- */
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  padding:16px;
-}
-
-/* ---------- Top Tabs (Single line, no wrap) ---------- */
-nav{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  overflow-x:auto;
-  white-space:nowrap;        /* ไม่ให้ขึ้นบรรทัดใหม่ */
-  scrollbar-width:thin;
-  padding:8px 16px;
-  background:#f7faf8;
-  border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:20;
-}
+.topbar .logo{width:28px; height:28px; display:grid; place-items:center}
+.topbar .title{font-weight:700}
+.tabs{margin-left:auto; display:flex; gap:6px; overflow:auto; white-space:nowrap}
 .tab{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:10px 14px;
-  height:40px;               /* ความสูงคงที่ทุกแท็บ */
-  border:1px solid var(--border);
-  border-radius:999px;
-  background:#fff;
-  color:#2c3e50;
-  cursor:pointer;
-  user-select:none;
-  transition:all .15s ease;
+  border:1px solid var(--border); background:#fff; padding:6px 10px; border-radius:10px; cursor:pointer;
 }
-.tab:hover{ border-color:#cfe3d6; background:#fbfffd }
-.tab.active{
-  background:var(--brand);
-  color:#fff;
-  border-color:var(--brand);
-  box-shadow:0 4px 10px rgba(27,143,58,.18);
-}
+.tab.active{background:var(--light); border-color:var(--brand-2); color:#0b5a24}
 
-/* ---------- Utilities ---------- */
-.hidden{ display:none !important; }
-.row{
-  display:flex; gap:12px; align-items:center; flex-wrap:wrap;
-}
-.col{ flex:1 1 0; min-width:220px; }
-.right{ margin-left:auto }
-.center{ text-align:center }
-.mt8{ margin-top:8px } .mt12{ margin-top:12px } .mt16{ margin-top:16px } .mt24{ margin-top:24px }
-.mb8{ margin-bottom:8px } .mb12{ margin-bottom:12px } .mb16{ margin-bottom:16px } .mb24{ margin-bottom:24px }
+.page{max-width:var(--page-w); margin:18px auto; padding:0 14px}
 
-/* ---------- Inputs (equal height) ---------- */
-.input, select, textarea{
-  width:100%;
-  height:40px;                 /* ทำให้กล่องสูงเท่ากัน */
-  padding:8px 10px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background:#fff;
-  color:var(--ink);
-  outline:none;
-  transition:border-color .15s ease, box-shadow .15s ease;
-}
-textarea.input{ height:auto; min-height:90px; resize:vertical; }
-.input:focus, select:focus, textarea:focus{
-  border-color:var(--brand-2);
-  box-shadow:0 0 0 3px rgba(44,168,74,.15);
-}
+.grid{display:grid; gap:14px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+@media (max-width:900px){ .grid-2{grid-template-columns:1fr} }
 
-/* กำหนดกริด 3 ช่องสำหรับ Temp/Humidity/Atm ให้ระดับเดียวกัน */
-.grid-3{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:12px;
-  align-items:start;
-}
-.grid-2{ display:grid; grid-template-columns: repeat(2,1fr); gap:12px; }
+.blk{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px}
+.label{font-weight:700;margin:6px 0 10px 0}
 
-/* label + input stack */
-.field{ display:flex; flex-direction:column; gap:6px; }
-.field label{ font-size:.92rem; color:#345; }
+.input, select, .btn{
+  height:38px; border-radius:10px; border:1px solid var(--border); padding:8px 10px; font-size:14px;
+}
+.input, select{width:100%; background:#fff}
 
-/* ---------- Buttons ---------- */
-.btn{
-  height:36px;
-  padding:0 14px;
-  display:inline-flex; align-items:center; justify-content:center;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#fff;
-  color:#1f3d2b;
-  font-weight:600;
-  cursor:pointer;
-  transition:all .15s ease;
-}
-.btn:hover{ box-shadow:0 2px 8px rgba(0,0,0,.08); transform:translateY(-1px); }
-.btn.primary{ background:var(--brand); color:#fff; border-color:var(--brand); }
-.btn.warn{ background:#fff5e6; color:#7a4f00; border-color:#f3d19c; }
-.btn.fail{ background:#ffecee; color:#8b1a17; border-color:#ffc9cd; }
-.btn.ghost{ background:transparent; }
+.row{display:flex; gap:10px; align-items:center}
+.row.end{justify-content:flex-end}
 
-/* ---------- Badges ---------- */
-.badge{
-  display:inline-block; padding:4px 10px; border-radius:999px; font-size:.82rem; font-weight:700;
-}
-.badge.pass{ background:#e8f6ee; color:var(--pass); border:1px solid #bde6cd; }
-.badge.fail{ background:#fdecea; color:var(--fail); border:1px solid #f5c2c0; }
+.toolbar{display:flex; flex-wrap:wrap; gap:10px; margin:10px 0}
+.kpis{display:grid; grid-template-columns:repeat(5,1fr); gap:10px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px}
+.kpi-h{font-size:12px;opacity:.7}
+.kpi-v{font-size:20px;font-weight:700}
 
-/* ---------- Tables ---------- */
-.table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:14px;
-  overflow:hidden;
-}
-.table thead th{
-  background:#f6faf7;
-  color:#2b3a32;
-  font-weight:700;
-  text-align:center;
-  padding:10px 8px;
-  border-bottom:1px solid var(--border);
-  line-height:1.15;            /* รองรับหัวตารางหลายบรรทัด */
-}
-.table tbody td{
-  padding:8px 8px;
-  border-bottom:1px solid #eef4ef;
-  text-align:center;
-  vertical-align:middle;
-}
-.table tbody tr:last-child td{ border-bottom:none; }
-.table tbody tr:hover{ background:#fbfffd; }
+.btn{cursor:pointer; background:#fff}
+.btn.primary{background:var(--brand); color:#fff; border-color:var(--brand)}
+.btn.warn{border-color:#d39; color:#d39}
+.btn.fail{border-color:#e33; color:#e33}
+.btn.ghost{background:#f9faf9}
 
-/* ช่องกรอกข้อมูลในตาราง entry */
-.mcell{
-  width:100%;
-  height:34px;                 /* ให้เท่ากันทุกช่อง */
-  text-align:right;
-}
+.table{width:100%; border-collapse:separate; border-spacing:0; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+.table th,.table td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:middle}
+.table thead th{background:#f7faf8; font-weight:700}
+.table tr:last-child td{border-bottom:none}
 
-/* ---------- Dashboard KPI ---------- */
-.kpis{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
-.kpi{
-  background:#fff; border:1px solid var(--border); border-radius:14px; padding:12px; text-align:center; box-shadow:var(--shadow);
-}
-.kpi .h{ font-size:.9rem; color:var(--muted); }
-.kpi .v{ font-size:1.6rem; font-weight:800; color:#163; }
+.badge{display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd}
+.badge.pass{background:#e8fff0; color:#0a7a2f; border-color:#bfe9ce}
+.badge.fail{background:#fff0f0; color:#b32626; border-color:#f0c2c2}
 
-/* ---------- Tags (QR) ---------- */
-#tagArea.hidden{ display:none }
-#tagArea{ margin-top:16px; }
-#tagList{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;
-}
-.tag{
-  background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; box-shadow:var(--shadow);
-}
-.tag .h{ font-weight:800; }
-.tag .l{ font-size:.92rem; color:#334; }
+.tag-area{margin-top:14px}
+.tag-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px}
+.tag{border:1px dashed var(--border); border-radius:12px; background:#fff; padding:12px}
+.tag .h{font-weight:700; margin-bottom:6px}
+.tag .l{font-size:13px; opacity:.9}
+.tag-toolbar{display:flex; gap:10px; margin-bottom:8px}
 
-/* ---------- Report ---------- */
-#reportCard{
-  background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px;
-}
-.report-grid{
-  display:grid; grid-template-columns: 1fr 1fr; gap:12px;
-}
-.report-section{ margin-top:12px; }
-.report-title{ font-weight:800; margin-bottom:8px; }
+.hidden{display:none}
 
-/* พื้นที่ลายเซ็น: กันพื้นที่ท้ายหน้ากระดาษสำหรับเซ็นจริง */
-.signatures{
-  display:grid; grid-template-columns: repeat(3,1fr); gap:16px;
-  margin-top:16px;
-  padding-bottom:60px;        /* กันพื้นที่จากขอบล่าง */
-}
-.sig-box{
-  border-top:2px solid #ccdcd2;
-  padding-top:8px;
-  min-height:90px;            /* มีที่ว่างพอวางภาพลายเซ็น */
-}
-.sig-role{ font-size:.9rem; color:#465; }
+.note{background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; margin:10px 0}
 
-/* ---------- Charts ---------- */
-.charts-grid{
-  display:grid; gap:16px;
-  grid-template-columns: 1fr; /* ซ้อนกันแนวตั้ง */
-}
-.chart-card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:12px; }
-canvas{
-  width:100% !important;
-  max-height:360px;           /* สูงมาตรฐานอ่านง่าย */
-}
+canvas{background:#fff; border:1px solid var(--border); border-radius:12px; margin-bottom:12px}
 
-/* ---------- Datalist dropdown width helpers ---------- */
-datalist option{ font-size:14px; }
-
-/* ---------- Print Styles (PDF) ---------- */
-@media print{
-  body{ background:#fff }
-  nav, .no-print, #tagArea .btn{ display:none !important; }
-  .card, #reportCard, .table{ box-shadow:none !important; }
-  .container{ padding:0; max-width:unset; }
-  /* บังคับแถวหัวตารางติดหน้าใหม่สวยๆ */
-  thead{ display:table-header-group; }
-  /* กันพื้นที่สำหรับลายเซ็น */
-  .signatures{ padding-bottom:80px; }
-  canvas{ max-height:260px !important; }
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width: 900px){
-  .kpis{ grid-template-columns:repeat(3,1fr); }
-  .report-grid{ grid-template-columns:1fr; }
-  .signatures{ grid-template-columns:1fr; }
-}
-@media (max-width: 560px){
-  .kpis{ grid-template-columns:repeat(2,1fr); }
-}
-
-/* ---------- Helpful section spacings ---------- */
-.section{
-  margin-top:16px;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px;
-  box-shadow:var(--shadow);
-}
-.section .header{
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:10px;
-}
-.section .header .title{ font-weight:800; }
-
-/* ---------- Sticky summary bar for Uncertainty ---------- */
-#uncertSummary{
-  background:#f3fff6;
-  border:1px solid #cdebd7;
-  padding:10px 12px;
-  border-radius:12px;
-  font-weight:700;
-  color:#114c2c;
-}
-
-/* ---------- Helper for the 3 parameter inputs row ---------- */
-.cal-env-row{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:12px;
-  align-items:stretch;     /* บังคับกล่องสูงเท่ากัน */
-}
-.cal-env-row .input{ height:44px; }  /* ให้สูงขึ้นเล็กน้อยเท่ากันทั้ง 3 ช่อง */
-
-/* ---------- Search bar row widths ---------- */
-.search-row .input{ min-width:220px; }
-.search-row select{ min-width:180px; }
-
-#btnGithub{ display:none !important; }
+/* ลายเซ็นให้มีระยะเผื่อแทรกลายเซ็น */
+.signature-box{height:90px; border-top:1px dashed #bbb; margin-top:18px}
